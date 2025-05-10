@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Roose/Importers/WavefrontMTL.h"
 #include "Roose/Renderer/Texture2D.h"
 #include "Roose/Renderer/Shader.h"
 #include "Roose/Utils/ShaderUtils.h"
@@ -22,26 +23,16 @@ namespace Roose {
         ~Material() = default;
 
         [[nodiscard]] const std::string& GetName() const { return m_Name; }
+        [[nodiscard]] const Ref<Shader>& GetShader() const { return m_Shader; }
 
         template<typename T>
-        void SetUniform(const std::string& name, const ShaderDataType type, const T& value)
-        {
-            const uint32_t size = ShaderDataTypeSize(type);
-            Uniform u;
-            u.type = type;
-            u.name = name;
-            u.value.resize(size);
-            memcpy(u.value.data(), &value, size);
-            m_Uniforms.push_back(u);
-        }
-        void SetTexture(const std::string& name, const Ref<Texture2D>& texture)
-        {
-            m_Textures[name] = texture;
-        }
+        void SetUniform(const std::string& name, ShaderDataType type, const T& value);
+        void SetTexture(const std::string& name, const Ref<Texture2D>& texture);
 
         void Bind() const;
 
         static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name);
+        static Ref<Material> LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl, const std::string& name);
     private:
         Ref<Shader> m_Shader;
         std::string m_Name;
@@ -52,31 +43,20 @@ namespace Roose {
     class MaterialLibrary
     {
     public:
-        static void Add(const std::string& name, const Ref<Material>& material)
-        {
-            RS_ASSERT(!Exists(name), "Material with this name already exists! Material will be replaced.")
-            s_Materials[name] = material;
-        }
-        static void Add(const Ref<Material>& material)
-        {
-            auto& name = material->GetName();
-            Add(name, material);
-        }
+        static void Add(const std::string& name, const Ref<Material>& material);
+        static void Add(const Ref<Material>& material);
 
-        static Ref<Material> Get(const std::string& name)
-        {
-            if (!Exists(name))
-            {
-                RS_ASSERT(false, "Material not found!")
-                return nullptr;
-            }
-            return s_Materials[name];
-        }
+        /**
+         * @brief Load a material from a Wavefront MTL file.
+         * @param filepath The path to the MTL file.
+         * @return A reference to the loaded material, or nullptr if no material was loaded.
+         * If multiple materials are found, the first one is returned.
+         */
+        static Ref<Material> Load(const std::string& filepath);
 
-        [[nodiscard]] static bool Exists(const std::string& name)
-        {
-            return s_Materials.find(name) != s_Materials.end();
-        }
+        [[nodiscard]] static Ref<Material> Get(const std::string& name);
+
+        [[nodiscard]] static bool Exists(const std::string& name);
     private:
         static std::unordered_map<std::string, Ref<Material>> s_Materials;
     };

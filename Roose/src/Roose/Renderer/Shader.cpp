@@ -27,8 +27,18 @@ namespace Roose {
 			return result;
 		}
 
+		static std::string GetFileName(const std::string& filepath)
+		{
+			auto lastSlash = filepath.find_last_of("/\\");
+			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
+			const auto lastDot = filepath.rfind('.');
+			const auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
+			return filepath.substr(lastSlash, count);
+		}
+
 	}
 
+	#pragma region Shader
 	Shader::~Shader()
 	{
 		glDeleteProgram(m_RendererID);
@@ -124,6 +134,7 @@ namespace Roose {
 			return;
 		}
 
+		m_Name = Utils::GetFileName(shaderPath);
 		CreateFromGLSL(vertexSource, fragmentSource);
 	}
 
@@ -131,6 +142,8 @@ namespace Roose {
 	{
 		const std::string vertexSource = Utils::ReadFileAsString(vertexShaderPath);
 		const std::string fragmentSource = Utils::ReadFileAsString(fragmentShaderPath);
+
+		m_Name = Utils::GetFileName(vertexShaderPath);
 		CreateFromGLSL(vertexSource, fragmentSource);
 	}
 
@@ -146,7 +159,7 @@ namespace Roose {
 		glLinkProgram(program);
 
 		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
 		if (isLinked == GL_FALSE)
 		{
 			GLint maxLength = 0;
@@ -160,7 +173,7 @@ namespace Roose {
 			glDeleteShader(vertexShader);
 			glDeleteShader(fragmentShader);
 
-			std::cout << infoLog.data() << std::endl;
+			RS_ERROR("Failed to link shader program: %s", infoLog.data());
 		}
 
 		glDetachShader(program, vertexShader);
@@ -253,6 +266,48 @@ namespace Roose {
 
 		m_UniformLocationCache[name] = location;
 		return location;
+	}
+	#pragma endregion
+	#pragma endregion
+
+	#pragma region ShaderLibrary
+	std::unordered_map<std::string, Ref<Shader>> ShaderLibrary::m_Shaders;
+
+	void ShaderLibrary::Add(const std::string& name, const Ref<Shader>& shader)
+	{
+		RS_ASSERT(!Exists(name), "Shader with this name already exists! Shader will be replaced.")
+		m_Shaders[name] = shader;
+	}
+
+	void ShaderLibrary::Add(const Ref<Shader>& shader)
+	{
+		const std::string& name = shader->GetName();
+		Add(name, shader);
+	}
+
+	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
+	{
+		const Ref<Shader> shader = Shader::FromGLSLTextFile(filepath);
+		Add(shader);
+		return shader;
+	}
+
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	{
+		const Ref<Shader> shader = Shader::FromGLSLTextFile(filepath);
+		Add(name, shader);
+		return shader;
+	}
+
+	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	{
+		RS_ASSERT(Exists(name), "Shader not found!")
+		return m_Shaders[name];
+	}
+
+	bool ShaderLibrary::Exists(const std::string& name)
+	{
+		return m_Shaders.find(name) != m_Shaders.end();
 	}
 	#pragma endregion
 

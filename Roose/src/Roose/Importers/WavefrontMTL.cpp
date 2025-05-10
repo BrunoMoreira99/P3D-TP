@@ -14,7 +14,7 @@ namespace Roose {
             return false;
         }
 
-        Material* currentMaterial = nullptr;
+        WavefrontMTLMaterial* currentMaterial = nullptr;
 
         std::string line;
         while (std::getline(file, line))
@@ -27,7 +27,7 @@ namespace Roose {
             {
                 std::string materialName;
                 iss >> materialName;
-                m_Materials[materialName] = Material();
+                m_Materials[materialName] = WavefrontMTLMaterial();
                 currentMaterial = &m_Materials[materialName];
             }
             else if (currentMaterial)
@@ -66,7 +66,7 @@ namespace Roose {
         return true;
     }
 
-    const WavefrontMTL::Material* WavefrontMTL::GetMaterial(const std::string& name) const
+    const WavefrontMTLMaterial* WavefrontMTL::GetMaterial(const std::string& name) const
     {
         const auto it = m_Materials.find(name);
         return it != m_Materials.end() ? &it->second : nullptr;

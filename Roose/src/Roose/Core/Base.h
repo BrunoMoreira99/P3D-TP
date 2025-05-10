@@ -2,6 +2,8 @@
 
 #include "Roose/Core/PlatformDetection.h"
 
+#include <memory>
+
 #ifdef RS_DEBUG
 	#if defined(RS_PLATFORM_WINDOWS)
 		#define RS_DEBUGBREAK() __debugbreak()

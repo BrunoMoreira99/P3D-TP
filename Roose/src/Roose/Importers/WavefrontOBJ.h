@@ -4,6 +4,29 @@
 
 namespace Roose {
 
+    class WavefrontOBJ;
+
+    struct WavefrontOBJFaceVertexIndex
+    {
+        uint32_t Position;
+        uint32_t TexCoord;
+        uint32_t Normal;
+    };
+
+    struct WavefrontOBJMesh
+    {
+        std::string Name;
+        std::vector<std::vector<WavefrontOBJFaceVertexIndex>> Faces;
+        std::string MaterialName;
+
+        WavefrontOBJMesh(WavefrontOBJ* parent)
+            : m_Parent(parent) {}
+
+        [[nodiscard]] const WavefrontOBJ& GetParent() const { return *m_Parent; }
+    private:
+        WavefrontOBJ* m_Parent = nullptr;
+    };
+
     /**
      * @brief A simple Wavefront OBJ parser.
      */
@@ -12,20 +35,6 @@ namespace Roose {
     public:
         WavefrontOBJ() = default;
         ~WavefrontOBJ() = default;
-
-        struct FaceVertexIndex
-        {
-            uint32_t position;
-            uint32_t texCoord;
-            uint32_t normal;
-        };
-
-        struct Mesh
-        {
-            std::string name;
-            std::vector<std::vector<FaceVertexIndex>> faces;
-            std::string materialName;
-        };
 
         /**
          * @brief Load a Wavefront OBJ file.
@@ -57,9 +66,9 @@ namespace Roose {
         /**
          * @brief Get the list of meshes.
          * Each mesh contains its own faces and associated material name.
-         * @return A vector of Mesh objects.
+         * @return A vector of WavefrontOBJMesh objects.
          */
-        [[nodiscard]] const std::vector<Mesh>& GetMeshes() const { return m_Meshes; }
+        [[nodiscard]] const std::vector<WavefrontOBJMesh>& GetMeshes() const { return m_Meshes; }
 
         /**
          * @brief Get the material file name.
@@ -70,7 +79,7 @@ namespace Roose {
         std::vector<glm::vec3> m_Vertices; // Global vertex positions
         std::vector<glm::vec3> m_Normals;  // Global normals
         std::vector<glm::vec2> m_TexCoords; // Global texture coordinates
-        std::vector<Mesh> m_Meshes; // List of meshes
+        std::vector<WavefrontOBJMesh> m_Meshes; // List of meshes
         std::string m_MaterialFileName; // Name of the material file (.mtl)
     };
 

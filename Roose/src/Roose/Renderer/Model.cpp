@@ -16,74 +16,34 @@ namespace Roose {
         }
         if (path.extension() == ".obj")
         {
-            LoadFromWavefrontOBJ(filepath);
+            WavefrontOBJ obj;
+            if (!obj.Load(filepath)) return;
+
+            const std::string& mtlFilepath = obj.GetMaterialFileName();
+            WavefrontMTL mtl;
+            bool mtlFileLoadedSuccessfully = mtl.Load(mtlFilepath);
+
+            for (const auto& objMesh : obj.GetMeshes())
+            {
+                Ref<Mesh> mesh = Mesh::LoadFromWavefrontOBJMesh(objMesh);
+                // Check if a material with the same name already exists
+                Ref<Material> material = MaterialLibrary::Get(objMesh.MaterialName);
+                if (!material && mtlFileLoadedSuccessfully)
+                {
+                    // Material does not exist, create a new one
+                    const WavefrontMTLMaterial* objMaterial = mtl.GetMaterial(objMesh.MaterialName);
+                    if (!objMaterial)
+                        RS_ERROR("[Model] Material not found: %s", objMesh.MaterialName.c_str());
+                    else
+                        material = Material::LoadFromWavefrontMTL(*objMaterial, objMesh.MaterialName);
+                }
+
+                m_MeshEntries.emplace_back(mesh, material, objMesh.Name);
+            }
         }
         else
         {
             RS_ERROR("[Model] Unsupported file format: %s", filepath.c_str());
-        }
-    }
-
-    void Model::LoadFromWavefrontOBJ(const std::string& filepath)
-    {
-        WavefrontOBJ obj;
-        if (!obj.Load(filepath)) return;
-
-        const std::vector<glm::vec3>& objVerticesData = obj.GetVertices();
-        const std::vector<glm::vec3>& objNormalsData = obj.GetNormals();
-        const std::vector<glm::vec2>& objTexCoordsData = obj.GetTexCoords();
-        const std::string& mtlFilepath = obj.GetMaterialFileName();
-
-        WavefrontMTL mtl;
-        bool mtlFileLoadedSuccessfully = mtl.Load(mtlFilepath);
-
-        for (const auto& objMesh : obj.GetMeshes())
-        {
-            std::vector<Mesh::Vertex> vertices;
-            std::vector<uint32_t> indices;
-
-            for (const auto& face : objMesh.faces)
-            {
-                for (const auto& vertexIndex : face)
-                {
-                    Mesh::Vertex v;
-                    v.Position = objVerticesData[vertexIndex.position];
-                    if (!objNormalsData.empty())
-                        v.Normal = objNormalsData[vertexIndex.normal];
-                    if (!objTexCoordsData.empty())
-                        v.TexCoord = objTexCoordsData[vertexIndex.texCoord];
-
-                    vertices.push_back(v);
-                    indices.push_back(static_cast<uint32_t>(vertices.size() - 1));
-                }
-            }
-
-            Ref<Material> material;
-            if (mtlFileLoadedSuccessfully)
-            {
-                const WavefrontMTL::Material* objMaterial = mtl.GetMaterial(objMesh.materialName);
-                if (!objMaterial)
-                {
-                    RS_ERROR("[Model::LoadFromWavefrontOBJ] Material not found: %s", objMesh.materialName.c_str());
-                }
-                else
-                {
-                    material = Material::Create(nullptr, objMesh.materialName);
-                    material->SetUniform("u_AmbientReflectance", ShaderDataType::Float3, objMaterial->Ka);
-                    material->SetUniform("u_DiffuseReflectance", ShaderDataType::Float3, objMaterial->Kd);
-                    material->SetUniform("u_SpecularReflectance", ShaderDataType::Float3, objMaterial->Ks);
-                    material->SetUniform("u_SpecularExponent", ShaderDataType::Float, objMaterial->Ns);
-
-                    if (!objMaterial->Texture.empty())
-                    {
-                        Ref<Texture2D> texture = Texture2D::Create(objMaterial->Texture);
-                        material->SetTexture("u_Texture", texture);
-                    }
-                }
-            }
-
-            Ref<Mesh> mesh = CreateRef<Mesh>(std::move(vertices), std::move(indices));
-            m_MeshEntries.emplace_back(mesh, material, objMesh.name);
         }
     }
 

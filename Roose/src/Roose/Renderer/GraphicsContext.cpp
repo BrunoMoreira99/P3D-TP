@@ -21,7 +21,7 @@ namespace Roose {
 	{
 		glfwMakeContextCurrent(m_WindowHandle);
 		const GLenum status = glewInit();
-		RS_ASSERT(status != GLEW_OK, "Failed to initialize GLEW!")
+		RS_ASSERT(status == GLEW_OK, "Failed to initialize GLEW!")
 
 		RS_INFO("OpenGL Info:");
 		RS_INFO("  Vendor: %s", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));

@@ -4,7 +4,7 @@
 namespace Roose
 {
 
-	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+	static GLenum ShaderDataTypeToOpenGLBaseType(const ShaderDataType type)
 	{
 		switch (type)
 		{

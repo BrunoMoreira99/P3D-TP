@@ -2,7 +2,6 @@
 
 #include "Roose/Core/Application.h"
 #include "Roose/Renderer/Renderer.h"
-#include "Roose/Input/Input.h"
 
 namespace Roose {
 

@@ -3,13 +3,29 @@
 
 namespace Roose {
 
-    std::unordered_map<std::string, Ref<Material>> MaterialLibrary::s_Materials;
-
+    #pragma region Material
     Ref<Material> Material::Create(const Ref<Shader>& shader, const std::string& name)
     {
         const Ref<Material> material = CreateRef<Material>(shader, name);
         MaterialLibrary::Add(name, material);
         return material;
+    }
+
+    template<typename T>
+    void Material::SetUniform(const std::string& name, const ShaderDataType type, const T& value)
+    {
+        const uint32_t size = ShaderDataTypeSize(type);
+        Uniform u;
+        u.type = type;
+        u.name = name;
+        u.value.resize(size);
+        memcpy(u.value.data(), &value, size);
+        m_Uniforms.push_back(u);
+    }
+
+    void Material::SetTexture(const std::string& name, const Ref<Texture2D>& texture)
+    {
+        m_Textures[name] = texture;
     }
 
     void Material::Bind() const
@@ -42,5 +58,65 @@ namespace Roose {
             textureUnit++;
         }
     }
+
+    Ref<Material> Material::LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl, const std::string& name)
+    {
+        const Ref<Material> material = Create(ShaderLibrary::Get("Blinn-Phong"), name);
+        material->SetUniform("u_Ambient", ShaderDataType::Float3, mtl.Ka);
+        material->SetUniform("u_Diffuse", ShaderDataType::Float3, mtl.Kd);
+        material->SetUniform("u_Specular", ShaderDataType::Float3, mtl.Ks);
+        material->SetUniform("u_Shininess", ShaderDataType::Float, mtl.Ns);
+
+        if (!mtl.Texture.empty())
+        {
+            const Ref<Texture2D> texture = Texture2D::Create(mtl.Texture);
+            material->SetTexture("u_Texture", texture);
+        }
+
+        return material;
+    }
+    #pragma endregion
+
+    #pragma region MaterialLibrary
+    std::unordered_map<std::string, Ref<Material>> MaterialLibrary::s_Materials;
+
+    void MaterialLibrary::Add(const std::string& name, const Ref<Material>& material)
+    {
+        RS_ASSERT(!Exists(name), "Material with this name already exists! Material will be replaced.")
+        s_Materials[name] = material;
+    }
+
+    void MaterialLibrary::Add(const Ref<Material>& material)
+    {
+        Add(material->GetName(), material);
+    }
+
+    Ref<Material> MaterialLibrary::Load(const std::string& filepath)
+    {
+        WavefrontMTL mtl;
+        if (!mtl.Load(filepath)) return nullptr;
+
+        Ref<Material> firstMaterial = nullptr;
+        for (const auto& [name, material] : mtl.GetAllMaterials())
+        {
+            if (!firstMaterial)
+                firstMaterial = Material::LoadFromWavefrontMTL(material, name);
+            else
+                Material::LoadFromWavefrontMTL(material, name);
+        }
+        return firstMaterial;
+    }
+
+    Ref<Material> MaterialLibrary::Get(const std::string& name)
+    {
+        const auto it = s_Materials.find(name);
+        return it != s_Materials.end() ? it->second : nullptr;
+    }
+
+    bool MaterialLibrary::Exists(const std::string& name)
+    {
+        return s_Materials.count(name) > 0;
+    }
+    #pragma endregion
 
 }

@@ -3,7 +3,7 @@
 #include "Roose/Renderer/GraphicsContext.h"
 #include "Roose/Events/Event.h"
 
-#include <GLFW/glfw3.h>
+struct GLFWwindow;
 
 namespace Roose {
 
@@ -15,8 +15,8 @@ namespace Roose {
 
         WindowProps(
             const std::string& title = "Roose",
-            uint32_t width = 1280,
-            uint32_t height = 720
+            uint32_t width = 1600,
+            uint32_t height = 900
         ) : Title(title), Width(width), Height(height) {}
     };
 
@@ -34,6 +34,7 @@ namespace Roose {
         [[nodiscard]] uint32_t GetHeight() const { return m_Data.Height; }
 
         // Window attributes
+        void SetTitle(const std::string& title);
         void SetEventCallback(const EventCallbackFn& callback) { m_Data.EventCallback = callback; }
         void SetVSync(bool enabled);
         [[nodiscard]] bool IsVSync() const;

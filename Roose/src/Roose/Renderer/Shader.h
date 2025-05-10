@@ -29,6 +29,8 @@ namespace Roose {
 		void SetFloat4(const std::string& name, const glm::vec4& value);
 		void SetMat3(const std::string& name, const glm::mat3& matrix);
 		void SetMat4(const std::string& name, const glm::mat4& matrix);
+
+		[[nodiscard]] const std::string& GetName() const { return m_Name; }
 	private:
 		void LoadFromSingleGLSLTextFile(const std::string& shaderPath);
 		void LoadFromGLSLTextFiles(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
@@ -38,7 +40,23 @@ namespace Roose {
 		GLint GetUniformLocation(const std::string& name);
 	private:
 		uint32_t m_RendererID;
+		std::string m_Name;
 		std::unordered_map<std::string, GLint> m_UniformLocationCache;
+	};
+
+	class ShaderLibrary
+	{
+	public:
+		static void Add(const std::string& name, const Ref<Shader>& shader);
+		static void Add(const Ref<Shader>& shader);
+		static Ref<Shader> Load(const std::string& filepath);
+		static Ref<Shader> Load(const std::string& name, const std::string& filepath);
+
+		[[nodiscard]] static Ref<Shader> Get(const std::string& name);
+
+		[[nodiscard]] static bool Exists(const std::string& name);
+	private:
+		static std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 
 }

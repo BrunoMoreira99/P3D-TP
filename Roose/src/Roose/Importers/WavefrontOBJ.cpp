@@ -16,7 +16,7 @@ namespace Roose {
 
         bool notifiedAboutNonTriangles = false;
         bool notifiedAboutInvalidFaces = false;
-        Mesh* currentMesh = nullptr;
+        WavefrontOBJMesh* currentMesh = nullptr;
 
         std::string line;
         while (std::getline(file, line))
@@ -31,18 +31,18 @@ namespace Roose {
             }
             else if (prefix == "o" || prefix == "g")
             {
-                m_Meshes.emplace_back();
+                m_Meshes.emplace_back(this);
                 currentMesh = &m_Meshes.back();
-                iss >> currentMesh->name;
+                iss >> currentMesh->Name;
             }
             else if (prefix == "usemtl")
             {
                 if (!currentMesh)
                 {
-                    m_Meshes.emplace_back();
+                    m_Meshes.emplace_back(this);
                     currentMesh = &m_Meshes.back();
                 }
-                iss >> currentMesh->materialName;
+                iss >> currentMesh->MaterialName;
             }
             else if (prefix == "v")
             {
@@ -66,7 +66,7 @@ namespace Roose {
             {
                 if (!currentMesh)
                 {
-                    m_Meshes.emplace_back();
+                    m_Meshes.emplace_back(this);
                     currentMesh = &m_Meshes.back();
                 }
 
@@ -97,23 +97,23 @@ namespace Roose {
                     continue;
                 }
 
-                std::vector<FaceVertexIndex> face;
+                std::vector<WavefrontOBJFaceVertexIndex> face;
                 for (const std::string& token : vertexTokens)
                 {
                     std::string parsed = token;
                     std::replace(parsed.begin(), parsed.end(), '/', ' ');
                     std::istringstream vertexStream(parsed);
 
-                    FaceVertexIndex vi;
-                    vertexStream >> vi.position >> vi.texCoord >> vi.normal;
-                    vi.position -= 1; // OBJ indices are 1-based
-                    vi.texCoord -= 1;
-                    vi.normal -= 1;
+                    WavefrontOBJFaceVertexIndex vi;
+                    vertexStream >> vi.Position >> vi.TexCoord >> vi.Normal;
+                    vi.Position -= 1; // OBJ indices are 1-based
+                    vi.TexCoord -= 1;
+                    vi.Normal -= 1;
 
                     face.push_back(vi);
                 }
 
-                currentMesh->faces.push_back(face);
+                currentMesh->Faces.push_back(face);
             }
         }
 
