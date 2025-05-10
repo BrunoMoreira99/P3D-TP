@@ -34,7 +34,9 @@ namespace Roose {
         [[nodiscard]] bool HasNormals() const { return m_HasNormals; }
         [[nodiscard]] bool HasTexCoords() const { return m_HasTexCoords; }
 
-        static Ref<Mesh> LoadFromWavefrontOBJMesh(const WavefrontOBJMesh& mesh);
+        static Ref<Mesh> Create(const WavefrontOBJMesh& objMesh);
+    private:
+        void LoadFromWavefrontOBJMesh(const WavefrontOBJMesh& objMesh);
     private:
         std::vector<MeshVertex> m_Vertices;
         std::vector<uint32_t> m_Indices;

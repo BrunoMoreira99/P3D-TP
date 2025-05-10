@@ -6,44 +6,54 @@
 
 namespace Roose {
 
-    Model::Model(const std::string& filepath)
+    Ref<Model> Model::Create(const std::string& filepath)
     {
         const std::filesystem::path path(filepath);
         if (!std::filesystem::exists(path))
         {
             RS_ERROR("[Model] File not found: %s", filepath.c_str());
-            return;
+            return nullptr;
         }
         if (path.extension() == ".obj")
         {
-            WavefrontOBJ obj;
-            if (!obj.Load(filepath)) return;
-
-            const std::string& mtlFilepath = obj.GetMaterialFileName();
-            WavefrontMTL mtl;
-            bool mtlFileLoadedSuccessfully = mtl.Load(mtlFilepath);
-
-            for (const auto& objMesh : obj.GetMeshes())
-            {
-                Ref<Mesh> mesh = Mesh::LoadFromWavefrontOBJMesh(objMesh);
-                // Check if a material with the same name already exists
-                Ref<Material> material = MaterialLibrary::Get(objMesh.MaterialName);
-                if (!material && mtlFileLoadedSuccessfully)
-                {
-                    // Material does not exist, create a new one
-                    const WavefrontMTLMaterial* objMaterial = mtl.GetMaterial(objMesh.MaterialName);
-                    if (!objMaterial)
-                        RS_ERROR("[Model] Material not found: %s", objMesh.MaterialName.c_str());
-                    else
-                        material = Material::LoadFromWavefrontMTL(*objMaterial, objMesh.MaterialName);
-                }
-
-                m_MeshEntries.emplace_back(mesh, material, objMesh.Name);
-            }
+            const Ref<Model> model = CreateRef<Model>();
+            model->LoadFromWavefrontOBJ(filepath);
+            return model;
         }
-        else
+        RS_ERROR("[Model] Unsupported file format: %s", filepath.c_str());
+        return nullptr;
+    }
+
+    void Model::LoadFromWavefrontOBJ(const std::string& filepath)
+    {
+        WavefrontOBJ obj;
+        if (!obj.Load(filepath)) return;
+
+        const std::string& mtlFilepath = obj.GetMaterialFileName();
+        WavefrontMTL mtl;
+        bool mtlFileLoadedSuccessfully = mtl.Load(mtlFilepath);
+
+        for (const auto& objMesh : obj.GetMeshes())
         {
-            RS_ERROR("[Model] Unsupported file format: %s", filepath.c_str());
+            Ref<Mesh> mesh = Mesh::Create(objMesh);
+            if (!mesh)
+            {
+                RS_ERROR("[Model] Failed to create mesh from OBJ file.");
+                continue;
+            }
+            // Check if a material with the same name already exists
+            Ref<Material> material = MaterialLibrary::Get(objMesh.MaterialName);
+            if (!material && mtlFileLoadedSuccessfully)
+            {
+                // Material does not exist, create a new one
+                const WavefrontMTLMaterial* objMaterial = mtl.GetMaterial(objMesh.MaterialName);
+                if (!objMaterial)
+                    RS_ERROR("[Model] Material not found: %s", objMesh.MaterialName.c_str());
+                else
+                    material = Material::Create(*objMaterial, objMesh.MaterialName);
+            }
+
+            m_MeshEntries.emplace_back(mesh, material, objMesh.Name);
         }
     }
 

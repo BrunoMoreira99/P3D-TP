@@ -3,9 +3,20 @@
 
 namespace Roose {
 
-    Ref<Mesh> Mesh::LoadFromWavefrontOBJMesh(const WavefrontOBJMesh& objMesh)
+    Ref<Mesh> Mesh::Create(const WavefrontOBJMesh& objMesh)
     {
+        if (objMesh.Faces.empty())
+        {
+            RS_ERROR("[Mesh] No faces found in OBJ file.");
+            return nullptr;
+        }
         Ref<Mesh> mesh = CreateRef<Mesh>();
+        mesh->LoadFromWavefrontOBJMesh(objMesh);
+        return mesh;
+    }
+
+    void Mesh::LoadFromWavefrontOBJMesh(const WavefrontOBJMesh& objMesh)
+    {
         const WavefrontOBJ& parentOBJ = objMesh.GetParent();
         const auto& objVerticesData  = parentOBJ.GetVertices();
         const auto& objNormalsData   = parentOBJ.GetNormals();
@@ -14,15 +25,11 @@ namespace Roose {
         if (objVerticesData.empty())
         {
             RS_ERROR("[Mesh] No vertices found in OBJ file.");
-            return nullptr;
+            return;
         }
-        if (objMesh.Faces.empty())
-        {
-            RS_ERROR("[Mesh] No faces found in OBJ file.");
-            return nullptr;
-        }
-        mesh->m_HasNormals = !objNormalsData.empty();
-        mesh->m_HasTexCoords = !objTexCoordsData.empty();
+
+        m_HasNormals = !objNormalsData.empty();
+        m_HasTexCoords = !objTexCoordsData.empty();
 
         std::unordered_map<MeshVertex, uint32_t> uniqueVertices;
 
@@ -32,22 +39,20 @@ namespace Roose {
             {
                 MeshVertex meshVertex;
                 meshVertex.Position = objVerticesData[vertexIndex.Position];
-                if (mesh->m_HasNormals)
+                if (m_HasNormals)
                     meshVertex.Normal = objNormalsData[vertexIndex.Normal];
-                if (mesh->m_HasTexCoords)
+                if (m_HasTexCoords)
                     meshVertex.TexCoord = objTexCoordsData[vertexIndex.TexCoord];
 
                 // Vertex deduplication
                 if (uniqueVertices.count(meshVertex) == 0)
                 {
-                    uniqueVertices[meshVertex] = static_cast<uint32_t>(mesh->m_Vertices.size());
-                    mesh->m_Vertices.push_back(meshVertex);
+                    uniqueVertices[meshVertex] = static_cast<uint32_t>(m_Vertices.size());
+                    m_Vertices.push_back(meshVertex);
                 }
-                mesh->m_Indices.push_back(uniqueVertices[meshVertex]);
+                m_Indices.push_back(uniqueVertices[meshVertex]);
             }
         }
-
-        return mesh;
     }
 
 }

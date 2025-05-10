@@ -11,6 +11,13 @@ namespace Roose {
         return material;
     }
 
+    Ref<Material> Material::Create(const WavefrontMTLMaterial& mtl, const std::string& name)
+    {
+        const Ref<Material> material = Create(ShaderLibrary::Get("Blinn-Phong"), name);
+        material->LoadFromWavefrontMTL(mtl);
+        return material;
+    }
+
     template<typename T>
     void Material::SetUniform(const std::string& name, const ShaderDataType type, const T& value)
     {
@@ -59,21 +66,18 @@ namespace Roose {
         }
     }
 
-    Ref<Material> Material::LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl, const std::string& name)
+    void Material::LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl)
     {
-        const Ref<Material> material = Create(ShaderLibrary::Get("Blinn-Phong"), name);
-        material->SetUniform("u_Ambient", ShaderDataType::Float3, mtl.Ka);
-        material->SetUniform("u_Diffuse", ShaderDataType::Float3, mtl.Kd);
-        material->SetUniform("u_Specular", ShaderDataType::Float3, mtl.Ks);
-        material->SetUniform("u_Shininess", ShaderDataType::Float, mtl.Ns);
+        SetUniform("u_Ambient", ShaderDataType::Float3, mtl.Ka);
+        SetUniform("u_Diffuse", ShaderDataType::Float3, mtl.Kd);
+        SetUniform("u_Specular", ShaderDataType::Float3, mtl.Ks);
+        SetUniform("u_Shininess", ShaderDataType::Float, mtl.Ns);
 
         if (!mtl.Texture.empty())
         {
             const Ref<Texture2D> texture = Texture2D::Create(mtl.Texture);
-            material->SetTexture("u_Texture", texture);
+            SetTexture("u_Texture", texture);
         }
-
-        return material;
     }
     #pragma endregion
 
@@ -100,9 +104,9 @@ namespace Roose {
         for (const auto& [name, material] : mtl.GetAllMaterials())
         {
             if (!firstMaterial)
-                firstMaterial = Material::LoadFromWavefrontMTL(material, name);
+                firstMaterial = Material::Create(material, name);
             else
-                Material::LoadFromWavefrontMTL(material, name);
+                Material::Create(material, name);
         }
         return firstMaterial;
     }

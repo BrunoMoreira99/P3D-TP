@@ -32,7 +32,9 @@ namespace Roose {
         void Bind() const;
 
         static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name);
-        static Ref<Material> LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl, const std::string& name);
+        static Ref<Material> Create(const WavefrontMTLMaterial& mtl, const std::string& name);
+    private:
+        void LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl);
     private:
         Ref<Shader> m_Shader;
         std::string m_Name;

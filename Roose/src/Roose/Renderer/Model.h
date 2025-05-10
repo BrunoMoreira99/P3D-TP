@@ -9,18 +9,20 @@ namespace Roose {
     {
     public:
         struct MeshEntry {
-            Ref<Mesh> mesh;
-            Ref<Material> material;
-            std::string name;
+            Ref<Mesh> Mesh;
+            Ref<Material> Material;
+            std::string Name;
 
-            MeshEntry(const Ref<Mesh>& mesh, const Ref<Material>& material, std::string name)
-                : mesh(mesh), material(material), name(std::move(name)) {}
+            MeshEntry(const Ref<Roose::Mesh>& mesh, const Ref<Roose::Material>& material, std::string name)
+                : Mesh(mesh), Material(material), Name(std::move(name)) {}
         };
 
-        Model(const std::string& filepath);
+        Model() = default;
         ~Model() = default;
 
         [[nodiscard]] const std::vector<MeshEntry>& GetMeshes() const { return m_MeshEntries; }
+
+        static Ref<Model> Create(const std::string& filepath);
     private:
         void LoadFromWavefrontOBJ(const std::string& filepath);
     private:
