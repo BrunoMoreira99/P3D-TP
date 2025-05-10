@@ -1,0 +1,3 @@
+[submodule "Roose/vendor/glm"]
+	path = Roose/vendor/glm
+	url = https://github.com/g-truc/glm

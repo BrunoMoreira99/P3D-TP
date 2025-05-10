@@ -1,3 +1,5 @@
+include "Dependencies.lua"
+
 workspace "P3D-TP"
     architecture "x64"
     startproject "BallPool"

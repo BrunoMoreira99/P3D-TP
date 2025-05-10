@@ -12,26 +12,33 @@ project "Roose"
     files
     {
         "src/**.h",
-        "src/**.cpp"
+        "src/**.cpp",
+        "vendor/stb_image/**.h",
+        "vendor/stb_image/**.cpp",
+        "vendor/glm/glm/**.hpp",
+        "vendor/glm/glm/**.inl"
     }
 
     includedirs
     {
         "src",
-        "vendor/stb_image"
+        "%{IncludeDir.glm}",
+        "%{IncludeDir.stb_image}"
     }
 
     links
     {
         "vendor/GLEW/glew32s.lib",
         "vendor/GLFW/glfw3.lib",
-        "opengl32.lib",
+        "opengl32.lib"
     }
 
     defines
     {
         "_CRT_SECURE_NO_WARNINGS",
-        "GLEW_STATIC"
+        "GLEW_STATIC",
+        "GLFW_INCLUDE_NONE",
+        "GLM_ENABLE_EXPERIMENTAL"
     }
 
     filter "system:windows"
