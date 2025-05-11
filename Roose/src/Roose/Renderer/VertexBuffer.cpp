@@ -3,7 +3,23 @@
 
 namespace Roose {
 
-    VertexBuffer::VertexBuffer(const float* vertices, const GLsizeiptr size)
+    Ref<VertexBuffer> VertexBuffer::Create(const uint32_t size)
+    {
+        return CreateRef<VertexBuffer>(size);
+    }
+
+    Ref<VertexBuffer> VertexBuffer::Create(const void* vertices, const uint32_t size)
+    {
+        return CreateRef<VertexBuffer>(vertices, size);
+    }
+
+    VertexBuffer::VertexBuffer(const uint32_t size) : m_Size(size)
+    {
+        glCreateBuffers(1, &m_RendererID);
+        glNamedBufferData(m_RendererID, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
+    }
+
+    VertexBuffer::VertexBuffer(const void* vertices, const uint32_t size) : m_Size(size)
     {
         glCreateBuffers(1, &m_RendererID);
         // With Direct State Access (DSA), we can create and populate buffer objects directly, without needing to bind them first.
@@ -11,7 +27,7 @@ namespace Roose {
         // (See: https://www.khronos.org/opengl/wiki/Buffer_Object)
         //  > "When you're just creating, filling the buffer object with data, or both, the target you use doesn't technically matter."
         // Only when the buffer is bound for actual use does the target become relevant.
-        glNamedBufferData(m_RendererID, size, vertices, GL_STATIC_DRAW);
+        glNamedBufferData(m_RendererID, static_cast<GLsizeiptr>(size), vertices, GL_STATIC_DRAW);
     }
 
     VertexBuffer::~VertexBuffer()
@@ -29,9 +45,11 @@ namespace Roose {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::SetData(const void* data, const uint32_t size)
+    void VertexBuffer::SetData(const void* data, const uint32_t size, const uint32_t offset)
     {
-        glNamedBufferSubData(m_RendererID, 0, size, data);
+        RS_ASSERT((offset + size) <= m_Size, "VertexBuffer::SetData: offset + size exceeds buffer size!")
+
+        glNamedBufferSubData(m_RendererID, offset, size, data);
     }
 
 }

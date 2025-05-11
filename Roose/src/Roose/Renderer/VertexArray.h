@@ -19,6 +19,8 @@ namespace Roose {
 
         [[nodiscard]] const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers; }
         [[nodiscard]] const Ref<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
+
+        static Ref<VertexArray> Create();
     private:
         uint32_t m_RendererID;
         uint32_t m_VertexBufferIndex = 0;

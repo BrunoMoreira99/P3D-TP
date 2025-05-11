@@ -1,10 +1,9 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include "Roose/Renderer/Material.h"
-#include "Roose/Renderer/Mesh.h"
+#include "Roose/Renderer/Model.h"
 #include "Roose/Renderer/VertexArray.h"
 #include "Roose/Renderer/VertexBuffer.h"
+#include <glm/glm.hpp>
 
 namespace Roose {
 
@@ -30,28 +29,31 @@ namespace Roose {
          * @param position The position to render the object at.
          * @param orientation The orientation of the object.
          */
-        void Render(glm::vec3 position, glm::vec3 orientation);
+        void Render(glm::vec3 position, glm::vec3 orientation) const;
 
         /**
          * @brief Renders the object with the specified transformation matrix.
          * @param transform The transformation matrix to apply to the object.
          */
-        void Render(glm::mat4 transform);
+        void Render(const glm::mat4& transform) const;
 
         /**
-         * @brief Sets the mesh for this object.
+         * @brief Sets the material for all meshes in this object.
          * @param material The material to set for this object.
          */
-        void SetMaterial(Ref<Material> material);
-    private:
-        Ref<Mesh> m_Mesh;
-        Ref<Material> m_Material;
-        uint32_t m_Count = 0;
-        uint32_t m_Offset = 0;
+        void SetMaterial(const Ref<Material>& material);
 
-        static Ref<VertexArray> s_VAO;
-        static Ref<VertexBuffer> s_VBO;
-        static Ref<IndexBuffer> s_IBO;
+        /**
+         * @brief Sets the material for a specific mesh in this object.
+         * @param material The material to set for this object.
+         * @param meshName The name of the mesh to set the material for.
+         */
+        void SetMaterial(const Ref<Material>& material, const std::string& meshName);
+    private:
+        std::vector<Model::MeshEntry> m_MeshesEntries;
+        Ref<VertexArray> m_VAO;
+        Ref<VertexBuffer> m_VBO;
+        Ref<IndexBuffer> m_IBO;
     };
 
 }

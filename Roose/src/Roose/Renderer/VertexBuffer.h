@@ -79,19 +79,43 @@ namespace Roose {
     class VertexBuffer
     {
     public:
-        VertexBuffer(const float* vertices, GLsizeiptr size);
+    	VertexBuffer(uint32_t size);
+        VertexBuffer(const void* vertices, uint32_t size);
         ~VertexBuffer();
 
         void Bind() const;
         void Unbind() const;
 
-    	void SetData(const void* data, uint32_t size);
+	    /**
+	     * @brief Sets the data for the vertex buffer.
+	     * @param data The pointer to the data to set.
+	     * @param size The size in bytes of the data to set.
+	     * @param offset The offset in the buffer to start writing data. This offset is in bytes.
+	     */
+	    void SetData(const void* data, uint32_t size, uint32_t offset = 0);
 
     	[[nodiscard]] uint32_t GetRendererID() const { return m_RendererID; }
     	[[nodiscard]] const BufferLayout& GetLayout() const { return m_Layout; }
     	void SetLayout(const BufferLayout& layout) { m_Layout = layout; }
+
+    	/**
+		 * @brief Creates a VertexBuffer with the specified size.
+		 * @param size The size in bytes of the buffer object's data store.
+		 * @return A reference to the created VertexBuffer.
+		 */
+		[[nodiscard]] static Ref<VertexBuffer> Create(uint32_t size);
+
+	    /**
+	     * @brief Creates a VertexBuffer with the specified vertices and size.
+	     * @param vertices The pointer to data that will be copied into the data store for initialization,
+	     * or nullptr if no data is to be copied.
+	     * @param size The size in bytes of the buffer object's data store.
+	     * @return A reference to the created VertexBuffer.
+	     */
+	    [[nodiscard]]static Ref<VertexBuffer> Create(const void* vertices, uint32_t size);
     private:
         uint32_t m_RendererID;
+    	uint32_t m_Size;
     	BufferLayout m_Layout;
     };
 

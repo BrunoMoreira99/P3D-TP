@@ -20,6 +20,9 @@ namespace Roose {
         Model() = default;
         ~Model() = default;
 
+        /**
+         * @brief Get the list of meshes in this model. This is a list of MeshEntry objects sorted by material.
+         */
         [[nodiscard]] const std::vector<MeshEntry>& GetMeshes() const { return m_MeshEntries; }
 
         static Ref<Model> Create(const std::string& filepath);

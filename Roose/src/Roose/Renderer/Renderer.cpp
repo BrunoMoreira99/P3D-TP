@@ -1,6 +1,8 @@
 #include "rspch.h"
 #include "Roose/Renderer/Renderer.h"
 
+#include <GL/glew.h>
+
 namespace Roose {
 
     static void OpenGLMessageCallback(
@@ -38,7 +40,6 @@ namespace Roose {
 
     void Renderer::Shutdown()
     {
-
     }
 
     void Renderer::OnWindowResize(const uint32_t width, const uint32_t height)
@@ -59,74 +60,6 @@ namespace Roose {
     void Renderer::Clear()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    }
-
-    void Renderer::BeginScene(const Camera& camera, const glm::mat4& transform)
-    {
-
-        StartBatch();
-    }
-
-    void Renderer::EndScene()
-    {
-
-    }
-
-    void Renderer::Flush()
-    {
-
-    }
-
-    void Renderer::Submit(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform)
-    {
-
-    }
-
-    void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
-    {
-
-    }
-
-    void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
-    {
-
-    }
-
-    void Renderer::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture)
-    {
-
-    }
-
-    void Renderer::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture)
-    {
-
-    }
-
-    void Renderer::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
-    {
-
-    }
-
-    void Renderer::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture)
-    {
-
-    }
-
-    void Renderer::DrawIndexed(const Ref<VertexArray>& vertexArray, const uint32_t indexCount)
-    {
-        vertexArray->Bind();
-        const GLsizei count = static_cast<GLsizei>(indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount());
-        glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-    }
-
-    void Renderer::StartBatch()
-    {
-
-    }
-
-    void Renderer::NextBatch()
-    {
-
     }
 
 }
