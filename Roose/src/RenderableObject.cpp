@@ -41,6 +41,8 @@ namespace Roose {
         {
             const auto& meshVertices = meshEntry.Mesh->GetVertices();
             auto meshIndices = meshEntry.Mesh->GetIndices(); // Copy to modify indices
+            const uint32_t meshVertexCount = static_cast<uint32_t>(meshVertices.size());
+            const uint32_t meshIndexCount = static_cast<uint32_t>(meshIndices.size());
 
             // Shift indices by the current vertex offset
             for (auto& index : meshIndices)
@@ -49,17 +51,17 @@ namespace Roose {
             // Upload vertex and index data to GPU
             m_VBO->SetData(
                 meshVertices.data(),
-                static_cast<uint32_t>(meshVertices.size()) * sizeof(MeshVertex),
+                meshVertexCount * sizeof(MeshVertex),
                 vertexOffset * sizeof(MeshVertex)
             );
             // Note that while the VertexBuffer requires the size and offset in bytes explicitly, the IndexBuffer does not.
             // Since the data format of a VertexBuffer can wildly differ, we need to specify the size and offset in bytes
             // explicitly every time. The data of an IndexBuffer, however, are always 32-bit unsigned integers (in our case).
             // This lets the IndexBuffer class calculate the size and offset in bytes internally.
-            m_IBO->SetData(meshIndices.data(), static_cast<uint32_t>(meshIndices.size()), indexOffset);
+            m_IBO->SetData(meshIndices.data(), meshIndexCount, indexOffset);
 
-            vertexOffset += meshVertices.size();
-            indexOffset += meshIndices.size();
+            vertexOffset += meshVertexCount;
+            indexOffset += meshIndexCount;
         }
 
         // Create the Vertex Array Object (VAO) and bind the VBO and IBO to it

@@ -29,8 +29,8 @@ namespace Roose {
         [[nodiscard]] const std::vector<MeshVertex>& GetVertices() const { return m_Vertices; }
         [[nodiscard]] const std::vector<uint32_t>& GetIndices() const { return m_Indices; }
 
-        [[nodiscard]] size_t GetVertexCount() const { return m_Vertices.size(); }
-        [[nodiscard]] size_t GetIndexCount() const { return m_Indices.size(); }
+        [[nodiscard]] uint32_t GetVertexCount() const { return static_cast<uint32_t>(m_Vertices.size()); }
+        [[nodiscard]] uint32_t GetIndexCount() const { return static_cast<uint32_t>(m_Indices.size()); }
         [[nodiscard]] bool HasNormals() const { return m_HasNormals; }
         [[nodiscard]] bool HasTexCoords() const { return m_HasTexCoords; }
 
