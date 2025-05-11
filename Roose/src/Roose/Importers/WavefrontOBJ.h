@@ -64,7 +64,7 @@ namespace Roose {
         [[nodiscard]] const std::vector<glm::vec2>& GetTexCoords() const { return m_TexCoords; }
 
         /**
-         * @brief Get the list of meshes.
+         * @brief Get the list of meshes. This is sorted by material.
          * Each mesh contains its own faces and associated material name.
          * @return A vector of WavefrontOBJMesh objects.
          */

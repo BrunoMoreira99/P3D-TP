@@ -117,6 +117,17 @@ namespace Roose {
             }
         }
 
+        if (m_Meshes.empty())
+        {
+            RS_ERROR("No meshes found in OBJ file: %s", filepath.c_str());
+            return false;
+        }
+        // Sort the meshes by material name to ensure that all meshes using the same material are grouped together
+        std::sort(m_Meshes.begin(), m_Meshes.end(), [](const WavefrontOBJMesh& a, const WavefrontOBJMesh& b)
+        {
+            return a.MaterialName < b.MaterialName;
+        });
+
         return true;
     }
 
