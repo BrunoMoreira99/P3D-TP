@@ -11,3 +11,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 group "Core"
     include "Roose"
 group ""
+
+group "Applications"
+    include "BallPool"
+group ""
