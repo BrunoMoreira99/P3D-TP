@@ -16,7 +16,3 @@
 #include <unordered_map>
 
 #include "Roose/Core/Base.h"
-
-#ifdef RS_PLATFORM_WINDOWS
-    #include <Windows.h>
-#endif

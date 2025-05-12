@@ -101,7 +101,7 @@ namespace Roose {
 			return;
 		}
 
-		m_Name = FileSystemUtils::GetFileName(shaderPath);
+		m_Name = FileSystemUtils::GetFileNameWithoutExtension(shaderPath);
 		CreateFromGLSL(vertexSource, fragmentSource);
 	}
 
@@ -110,7 +110,7 @@ namespace Roose {
 		const std::string vertexSource = FileSystemUtils::ReadFileAsString(vertexShaderPath);
 		const std::string fragmentSource = FileSystemUtils::ReadFileAsString(fragmentShaderPath);
 
-		m_Name = FileSystemUtils::GetFileName(vertexShaderPath);
+		m_Name = FileSystemUtils::GetFileNameWithoutExtension(vertexShaderPath);
 		CreateFromGLSL(vertexSource, fragmentSource);
 	}
 

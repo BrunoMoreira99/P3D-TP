@@ -16,6 +16,11 @@ namespace Roose {
         return std::filesystem::path(filePath).filename().string();
     }
 
+    std::string FileSystemUtils::GetFileNameWithoutExtension(const std::string& filePath)
+    {
+        return std::filesystem::path(filePath).stem().string();
+    }
+
     std::string FileSystemUtils::GetDirectory(const std::string& filePath)
     {
         return std::filesystem::path(filePath).parent_path().string();

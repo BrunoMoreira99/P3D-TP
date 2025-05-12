@@ -20,7 +20,14 @@ namespace Roose {
          * @return The file name as a string.
          */
         static std::string GetFileName(const std::string& filePath);
-        
+
+        /**
+         * @brief Extract the file name without the extension from a file path.
+         * @param filePath The file path as a string.
+         * @return The file name without the extension as a string.
+         */
+        static std::string GetFileNameWithoutExtension(const std::string& filePath);
+
         /**
          * @brief Extract the directory from a file path.
          * @param filePath The file path as a string.

@@ -9,6 +9,7 @@ namespace Roose {
     void RenderableObject::Load(std::string obj_model_filepath)
     {
         const Ref<Model> model = Model::Create(obj_model_filepath);
+        if (!model) return;
         m_MeshesEntries = std::vector(model->GetMeshes());
     }
 
