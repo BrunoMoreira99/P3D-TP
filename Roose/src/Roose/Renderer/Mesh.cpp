@@ -32,17 +32,20 @@ namespace Roose {
         m_HasTexCoords = !objTexCoordsData.empty();
 
         std::unordered_map<MeshVertex, uint32_t> uniqueVertices;
+        #ifdef RS_DEBUG
+        uint32_t dupeVerticesRemoved = 0;
+        #endif
 
         for (const auto& face : objMesh.Faces)
         {
-            for (const auto& vertexIndex : face)
+            for (const auto& [Position, TexCoord, Normal] : face)
             {
                 MeshVertex meshVertex;
-                meshVertex.Position = objVerticesData[vertexIndex.Position];
+                meshVertex.Position = objVerticesData[Position];
                 if (m_HasNormals)
-                    meshVertex.Normal = objNormalsData[vertexIndex.Normal];
+                    meshVertex.Normal = objNormalsData[Normal];
                 if (m_HasTexCoords)
-                    meshVertex.TexCoord = objTexCoordsData[vertexIndex.TexCoord];
+                    meshVertex.TexCoord = objTexCoordsData[TexCoord];
 
                 // Vertex deduplication
                 if (uniqueVertices.count(meshVertex) == 0)
@@ -50,9 +53,18 @@ namespace Roose {
                     uniqueVertices[meshVertex] = static_cast<uint32_t>(m_Vertices.size());
                     m_Vertices.push_back(meshVertex);
                 }
+                #ifdef RS_DEBUG
+                else
+                {
+                    dupeVerticesRemoved++;
+                }
+                #endif
                 m_Indices.push_back(uniqueVertices[meshVertex]);
             }
         }
+        #ifdef RS_DEBUG
+        RS_INFO("[Mesh] Removed %u duplicate vertices from %s", dupeVerticesRemoved, objMesh.Name.c_str());
+        #endif
     }
 
 }
