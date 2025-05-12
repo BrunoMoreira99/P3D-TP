@@ -7,17 +7,17 @@ layout(location = 2) in vec2 a_TexCoord;
 
 layout(std140, binding = 0) uniform Camera
 {
-	mat4 ViewProjection;
-	vec4 Position;
+    mat4 ViewProjection;
+    vec4 Position;
 } u_Camera;
 
 uniform mat4 u_Transform; // Model matrix
 
 struct VertexOutput
 {
-	vec3 Position;
-	vec3 Normal;
-	vec2 TexCoord;
+    vec3 Position;
+    vec3 Normal;
+    vec2 TexCoord;
 };
 
 layout(location = 0) out VertexOutput v_Output;
@@ -39,9 +39,9 @@ layout(location = 0) out vec4 o_Color;
 
 struct VertexOutput
 {
-	vec3 Position;
-	vec3 Normal;
-	vec2 TexCoord;
+    vec3 Position;
+    vec3 Normal;
+    vec2 TexCoord;
 };
 
 layout(location = 0) in VertexOutput v_Input;
@@ -50,8 +50,8 @@ layout(binding = 0) uniform sampler2D u_Texture;
 
 layout(std140, binding = 0) uniform Camera
 {
-	mat4 ViewProjection;
-	vec4 Position;
+    mat4 ViewProjection;
+    vec4 Position;
 } u_Camera;
 
 // Material properties

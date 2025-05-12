@@ -5,17 +5,17 @@
 #include <memory>
 
 #ifdef RS_DEBUG
-	#if defined(RS_PLATFORM_WINDOWS)
-		#define RS_DEBUGBREAK() __debugbreak()
-	#elif defined(RS_PLATFORM_LINUX)
-		#include <signal.h>
-		#define RS_DEBUGBREAK() raise(SIGTRAP)
-	#else
-		#error "Platform doesn't support debugbreak yet!"
-	#endif
-	#define RS_ENABLE_ASSERTS
+    #if defined(RS_PLATFORM_WINDOWS)
+        #define RS_DEBUGBREAK() __debugbreak()
+    #elif defined(RS_PLATFORM_LINUX)
+        #include <signal.h>
+        #define RS_DEBUGBREAK() raise(SIGTRAP)
+    #else
+        #error "Platform doesn't support debugbreak yet!"
+    #endif
+    #define RS_ENABLE_ASSERTS
 #else
-	#define RS_DEBUGBREAK()
+    #define RS_DEBUGBREAK()
 #endif
 
 #define RS_EXPAND_MACRO(x) x
@@ -27,21 +27,21 @@
 
 namespace Roose {
 
-	template<typename T>
-	using Scope = std::unique_ptr<T>;
-	template<typename T, typename ... Args>
-	constexpr Scope<T> CreateScope(Args&& ... args)
-	{
-		return std::make_unique<T>(std::forward<Args>(args)...);
-	}
+    template<typename T>
+    using Scope = std::unique_ptr<T>;
+    template<typename T, typename ... Args>
+    constexpr Scope<T> CreateScope(Args&& ... args)
+    {
+        return std::make_unique<T>(std::forward<Args>(args)...);
+    }
 
-	template<typename T>
-	using Ref = std::shared_ptr<T>;
-	template<typename T, typename ... Args>
-	constexpr Ref<T> CreateRef(Args&& ... args)
-	{
-		return std::make_shared<T>(std::forward<Args>(args)...);
-	}
+    template<typename T>
+    using Ref = std::shared_ptr<T>;
+    template<typename T, typename ... Args>
+    constexpr Ref<T> CreateRef(Args&& ... args)
+    {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
 
 }
 

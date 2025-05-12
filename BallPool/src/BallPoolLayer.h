@@ -11,21 +11,21 @@
 class BallPoolLayer : public Roose::Layer
 {
 public:
-	BallPoolLayer();
-	~BallPoolLayer() override = default;
+    BallPoolLayer();
+    ~BallPoolLayer() override = default;
 
-	void OnAttach() override;
-	void OnDetach() override;
+    void OnAttach() override;
+    void OnDetach() override;
 
-	void OnUpdate(Roose::Timestep deltaTime) override;
+    void OnUpdate(Roose::Timestep deltaTime) override;
 
-	void OnEvent(Roose::Event& e) override;
-	bool OnKeyDown(const Roose::KeyDownEvent& e);
-	bool OnMouseMove(const Roose::MouseMoveEvent& e);
-	bool OnMouseScroll(const Roose::MouseScrollEvent& e);
-	bool OnWindowResized(const Roose::WindowResizeEvent& e);
+    void OnEvent(Roose::Event& e) override;
+    bool OnKeyDown(const Roose::KeyDownEvent& e);
+    bool OnMouseMove(const Roose::MouseMoveEvent& e);
+    bool OnMouseScroll(const Roose::MouseScrollEvent& e);
+    bool OnWindowResized(const Roose::WindowResizeEvent& e);
 private:
-	Roose::PerspectiveCamera m_Camera;
-	Roose::OrthographicCamera m_TopViewCamera;
-	std::vector<BallGameObject> m_BilliardBalls;
+    Roose::PerspectiveCamera m_Camera;
+    Roose::OrthographicCamera m_TopViewCamera;
+    std::vector<BallGameObject> m_BilliardBalls;
 };
