@@ -24,7 +24,6 @@ namespace Roose {
     {
     public:
         Mesh() = default;
-        ~Mesh() = default;
 
         [[nodiscard]] const std::vector<MeshVertex>& GetVertices() const { return m_Vertices; }
         [[nodiscard]] const std::vector<uint32_t>& GetIndices() const { return m_Indices; }

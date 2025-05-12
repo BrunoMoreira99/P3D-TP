@@ -20,7 +20,6 @@ namespace Roose {
 
         Material(const Ref<Shader>& shader, const std::string& name)
             : m_Shader(shader), m_Name(name) {}
-        ~Material() = default;
 
         [[nodiscard]] const std::string& GetName() const { return m_Name; }
         [[nodiscard]] const Ref<Shader>& GetShader() const { return m_Shader; }

@@ -1,6 +1,8 @@
 #include "rspch.h"
 #include "Roose/Renderer/VertexBuffer.h"
 
+#include <GL/glew.h>
+
 namespace Roose {
 
     Ref<VertexBuffer> VertexBuffer::Create(const uint32_t size)

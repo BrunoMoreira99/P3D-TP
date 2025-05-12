@@ -20,7 +20,6 @@ namespace Roose {
     {
     public:
         WavefrontMTL() = default;
-        ~WavefrontMTL() = default;
 
         /**
          * @brief Load a Wavefront MTL file.

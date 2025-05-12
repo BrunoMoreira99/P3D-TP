@@ -7,14 +7,14 @@
 
 namespace Roose {
 
-	bool Input::IsKeyPressed(const KeyCode key)
+	bool Input::IsKeyDown(const KeyCode key)
 	{
 		GLFWwindow* window = Application::Get().GetWindow().GetNativeWindow();
 		const auto state = glfwGetKey(window, key);
 		return state == GLFW_PRESS;
 	}
 
-	bool Input::IsMouseButtonPressed(const MouseCode button)
+	bool Input::IsMouseButtonPress(const MouseCode button)
 	{
 		GLFWwindow* window = Application::Get().GetWindow().GetNativeWindow();
 		const auto state = glfwGetMouseButton(window, button);

@@ -34,7 +34,6 @@ namespace Roose {
     {
     public:
         WavefrontOBJ() = default;
-        ~WavefrontOBJ() = default;
 
         /**
          * @brief Load a Wavefront OBJ file.

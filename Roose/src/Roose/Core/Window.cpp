@@ -85,19 +85,19 @@ namespace Roose {
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(key, false);
+					KeyDownEvent event(key, false);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(key);
+					KeyUpEvent event(key);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, true);
+					KeyDownEvent event(key, true);
 					data.EventCallback(event);
 					break;
 				}
@@ -108,7 +108,7 @@ namespace Roose {
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-			KeyTypedEvent event(keycode);
+			KeyPressEvent event(keycode);
 			data.EventCallback(event);
 		});
 
@@ -120,13 +120,13 @@ namespace Roose {
 			{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(button);
+					MouseButtonPressEvent event(button);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(button);
+					MouseButtonReleaseEvent event(button);
 					data.EventCallback(event);
 					break;
 				}
@@ -137,7 +137,7 @@ namespace Roose {
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-			MouseScrolledEvent event((float)xOffset, (float)yOffset);
+			MouseScrollEvent event((float)xOffset, (float)yOffset);
 			data.EventCallback(event);
 		});
 
@@ -145,7 +145,7 @@ namespace Roose {
 		{
 			WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-			MouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
+			MouseMoveEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
 			data.EventCallback(event);
 		});
 	}

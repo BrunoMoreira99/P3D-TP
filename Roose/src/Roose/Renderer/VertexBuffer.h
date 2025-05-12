@@ -2,8 +2,6 @@
 
 #include "Roose/Utils/ShaderUtils.h"
 
-#include <GL/glew.h>
-
 namespace Roose {
 
 	struct BufferElement

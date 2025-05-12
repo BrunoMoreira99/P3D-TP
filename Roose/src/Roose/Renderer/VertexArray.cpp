@@ -1,6 +1,8 @@
 #include "rspch.h"
 #include "Roose/Renderer/VertexArray.h"
 
+#include <Gl/glew.h>
+
 namespace Roose
 {
 

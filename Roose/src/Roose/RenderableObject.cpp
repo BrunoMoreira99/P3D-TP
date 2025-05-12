@@ -2,7 +2,7 @@
 #include "RenderableObject.h"
 
 #include "Roose/Renderer/Model.h"
-#include "glm/gtx/euler_angles.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace Roose {
 
@@ -74,11 +74,7 @@ namespace Roose {
     void RenderableObject::Render(const glm::vec3 position, const glm::vec3 orientation) const
     {
         // Make transform matrix out of position and orientation
-        const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) *
-                                    glm::eulerAngleXYZ(glm::radians(orientation.x),
-                                                       glm::radians(orientation.y),
-                                                       glm::radians(orientation.z));
-        Render(transform);
+        Render(glm::translate(glm::mat4(1.0f), position) * glm::toMat4(glm::quat(orientation)));
     }
 
     void RenderableObject::Render(const glm::mat4& transform) const

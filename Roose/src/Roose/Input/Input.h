@@ -19,14 +19,14 @@ namespace Roose {
 		 * @param key The key code to check.
 		 * @return True if the key is pressed, false otherwise.
 		 */
-		static bool IsKeyPressed(KeyCode key);
+		static bool IsKeyDown(KeyCode key);
 
 		/**
 		 * @brief Checks if the specific mouse button is currently pressed.
 		 * @param button The mouse button code to check.
 		 * @return True if the mouse button is pressed, false otherwise.
 		 */
-		static bool IsMouseButtonPressed(MouseCode button);
+		static bool IsMouseButtonPress(MouseCode button);
 
 		/**
 		 * @brief Gets the current position of the mouse cursor.

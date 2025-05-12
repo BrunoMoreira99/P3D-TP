@@ -11,7 +11,6 @@ namespace Roose {
     {
     public:
         RenderableObject() = default;
-        ~RenderableObject() = default;
 
         /**
          * @brief Load a 3D model from a file, as well as its associated materials.
@@ -36,6 +35,12 @@ namespace Roose {
          * @param transform The transformation matrix to apply to the object.
          */
         void Render(const glm::mat4& transform) const;
+
+        /**
+         * @brief Get all the mesh entries of this object.
+         * @return A vector of mesh entries.
+         */
+        [[nodiscard]] const std::vector<Model::MeshEntry>& GetMeshesEntries() const { return m_MeshesEntries; }
 
         /**
          * @brief Sets the material for all meshes in this object.
