@@ -71,16 +71,16 @@ namespace Roose {
         [[nodiscard]] const std::vector<WavefrontOBJMesh>& GetMeshes() const { return m_Meshes; }
 
         /**
-         * @brief Get the material file name.
-         * @return A string containing the material file name, or an empty string if no material file is specified.
+         * @brief Get the material file path.
+         * @return A string containing the path to the material file, or an empty string if no material file is specified.
          */
-        [[nodiscard]] const std::string& GetMaterialFileName() const { return m_MaterialFileName; }
+        [[nodiscard]] const std::string& GetMaterialFilePath() const { return m_MaterialFilePath; }
     private:
         std::vector<glm::vec3> m_Vertices; // Global vertex positions
         std::vector<glm::vec3> m_Normals;  // Global normals
         std::vector<glm::vec2> m_TexCoords; // Global texture coordinates
         std::vector<WavefrontOBJMesh> m_Meshes; // List of meshes
-        std::string m_MaterialFileName; // Name of the material file (.mtl)
+        std::string m_MaterialFilePath; // Path to the material file (.mtl)
     };
 
 }

@@ -1,42 +1,9 @@
 #include "rspch.h"
 #include "Roose/Renderer/Shader.h"
 
-#include <fstream>
+#include "Roose/Utils/FileSystemUtils.h"
 
 namespace Roose {
-
-	namespace Utils {
-
-		static std::string ReadFileAsString(const std::string& filepath)
-		{
-			std::string result;
-			std::ifstream in(filepath, std::ios::in | std::ios::binary);
-			if (in)
-			{
-				in.seekg(0, std::ios::end);
-				result.resize((size_t)in.tellg());
-				in.seekg(0, std::ios::beg);
-				in.read(result.data(), result.size());
-				in.close();
-			}
-			else
-			{
-				RS_ERROR("Could not open file '%s'", filepath.c_str());
-			}
-
-			return result;
-		}
-
-		static std::string GetFileName(const std::string& filepath)
-		{
-			auto lastSlash = filepath.find_last_of("/\\");
-			lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-			const auto lastDot = filepath.rfind('.');
-			const auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-			return filepath.substr(lastSlash, count);
-		}
-
-	}
 
 	#pragma region Shader
 	Shader::~Shader()
@@ -87,7 +54,7 @@ namespace Roose {
 
 	void Shader::LoadFromSingleGLSLTextFile(const std::string& shaderPath)
 	{
-		std::string source = Utils::ReadFileAsString(shaderPath);
+		std::string source = FileSystemUtils::ReadFileAsString(shaderPath);
 		enum class ShaderType : int8_t
 		{
 			None = -1, Vertex, Fragment
@@ -134,16 +101,16 @@ namespace Roose {
 			return;
 		}
 
-		m_Name = Utils::GetFileName(shaderPath);
+		m_Name = FileSystemUtils::GetFileName(shaderPath);
 		CreateFromGLSL(vertexSource, fragmentSource);
 	}
 
 	void Shader::LoadFromGLSLTextFiles(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
 	{
-		const std::string vertexSource = Utils::ReadFileAsString(vertexShaderPath);
-		const std::string fragmentSource = Utils::ReadFileAsString(fragmentShaderPath);
+		const std::string vertexSource = FileSystemUtils::ReadFileAsString(vertexShaderPath);
+		const std::string fragmentSource = FileSystemUtils::ReadFileAsString(fragmentShaderPath);
 
-		m_Name = Utils::GetFileName(vertexShaderPath);
+		m_Name = FileSystemUtils::GetFileName(vertexShaderPath);
 		CreateFromGLSL(vertexSource, fragmentSource);
 	}
 

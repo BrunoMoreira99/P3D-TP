@@ -10,7 +10,7 @@ namespace Roose {
         glm::vec3 Kd = {};   // Diffuse reflectance
         glm::vec3 Ks = {};   // Specular reflectance
         float Ns = 1.0f;     // Shininess (specular exponent)
-        std::string Texture; // Texture file
+        std::string TexturePath; // Texture file path
     };
 
     /**

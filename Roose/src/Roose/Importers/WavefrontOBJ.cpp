@@ -1,5 +1,6 @@
 #include "rspch.h"
 #include "Roose/Importers/WavefrontOBJ.h"
+#include "Roose/Utils/FileSystemUtils.h"
 
 #include <fstream>
 
@@ -8,11 +9,13 @@ namespace Roose {
     bool WavefrontOBJ::Load(const std::string& filepath)
     {
         std::ifstream file(filepath);
-        if (!file.is_open())
+        if (!file)
         {
             RS_ERROR("Failed to open OBJ file: %s", filepath.c_str());
             return false;
         }
+
+        const std::string directory = FileSystemUtils::GetDirectory(filepath);
 
         bool notifiedAboutNonTriangles = false;
         bool notifiedAboutInvalidFaces = false;
@@ -27,7 +30,8 @@ namespace Roose {
 
             if (prefix == "mtllib")
             {
-                iss >> m_MaterialFileName;
+                iss >> m_MaterialFilePath;
+                m_MaterialFilePath = FileSystemUtils::JoinPaths(directory, m_MaterialFilePath);
             }
             else if (prefix == "o" || prefix == "g")
             {

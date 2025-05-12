@@ -17,7 +17,7 @@ namespace Roose {
 		RS_ASSERT(windowHandle, "Window handle is null!")
 	}
 
-	void GraphicsContext::Init()
+	void GraphicsContext::Init() const
 	{
 		glfwMakeContextCurrent(m_WindowHandle);
 		const GLenum status = glewInit();
@@ -35,7 +35,7 @@ namespace Roose {
 		RS_ASSERT(glMajor > 4 || (glMajor == 4 && glMinor >= 5), "Roose requires at least OpenGL version 4.5!")
 	}
 
-	void GraphicsContext::SwapBuffers()
+	void GraphicsContext::SwapBuffers() const
 	{
 		glfwSwapBuffers(m_WindowHandle);
 	}

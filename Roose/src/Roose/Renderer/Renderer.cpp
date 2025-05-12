@@ -1,5 +1,6 @@
 #include "rspch.h"
 #include "Roose/Renderer/Renderer.h"
+#include "Roose/Renderer/Shader.h"
 
 #include <GL/glew.h>
 
@@ -36,6 +37,9 @@ namespace Roose {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_DEPTH_TEST);
+
+        // Load shaders
+        ShaderLibrary::Load("assets/shaders/BlinnPhong.glsl");
     }
 
     void Renderer::Shutdown()

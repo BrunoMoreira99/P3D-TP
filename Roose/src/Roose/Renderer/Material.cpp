@@ -13,7 +13,7 @@ namespace Roose {
 
     Ref<Material> Material::Create(const WavefrontMTLMaterial& mtl, const std::string& name)
     {
-        const Ref<Material> material = Create(ShaderLibrary::Get("Blinn-Phong"), name);
+        const Ref<Material> material = Create(ShaderLibrary::Get("BlinnPhong"), name);
         material->LoadFromWavefrontMTL(mtl);
         return material;
     }
@@ -73,10 +73,9 @@ namespace Roose {
         SetUniform("u_Specular", ShaderDataType::Float3, mtl.Ks);
         SetUniform("u_Shininess", ShaderDataType::Float, mtl.Ns);
 
-        if (!mtl.Texture.empty())
+        if (!mtl.TexturePath.empty())
         {
-            const Ref<Texture2D> texture = Texture2D::Create(mtl.Texture);
-            SetTexture("u_Texture", texture);
+            SetTexture("u_Texture", Texture2D::Create(mtl.TexturePath));
         }
     }
     #pragma endregion

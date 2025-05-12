@@ -3,23 +3,25 @@
 
 #include "Roose/Importers/WavefrontMTL.h"
 #include "Roose/Importers/WavefrontOBJ.h"
+#include "Roose/Utils/FileSystemUtils.h"
 
 namespace Roose {
 
     Ref<Model> Model::Create(const std::string& filepath)
     {
-        const std::filesystem::path path(filepath);
-        if (!std::filesystem::exists(path))
+        if (!FileSystemUtils::FileExists(filepath))
         {
             RS_ERROR("[Model] File not found: %s", filepath.c_str());
             return nullptr;
         }
-        if (path.extension() == ".obj")
+
+        if (FileSystemUtils::GetFileExtension(filepath) == ".obj")
         {
             const Ref<Model> model = CreateRef<Model>();
             model->LoadFromWavefrontOBJ(filepath);
             return model;
         }
+
         RS_ERROR("[Model] Unsupported file format: %s", filepath.c_str());
         return nullptr;
     }
@@ -29,9 +31,9 @@ namespace Roose {
         WavefrontOBJ obj;
         if (!obj.Load(filepath)) return;
 
-        const std::string& mtlFilepath = obj.GetMaterialFileName();
         WavefrontMTL mtl;
-        bool mtlFileLoadedSuccessfully = mtl.Load(mtlFilepath);
+        const std::string& mtlFilePath = obj.GetMaterialFilePath();
+        const bool mtlFileLoadedSuccessfully = mtlFilePath.empty() ? false : mtl.Load(mtlFilePath);
 
         for (const auto& objMesh : obj.GetMeshes())
         {

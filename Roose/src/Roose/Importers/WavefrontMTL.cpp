@@ -1,5 +1,6 @@
 #include "rspch.h"
 #include "Roose/Importers/WavefrontMTL.h"
+#include "Roose/Utils/FileSystemUtils.h"
 
 #include <fstream>
 
@@ -8,11 +9,13 @@ namespace Roose {
     bool WavefrontMTL::Load(const std::string& filepath)
     {
         std::ifstream file(filepath);
-        if (!file.is_open())
+        if (!file)
         {
             RS_ERROR("Failed to open MTL file: %s", filepath.c_str());
             return false;
         }
+
+        const std::string directory = FileSystemUtils::GetDirectory(filepath);
 
         WavefrontMTLMaterial* currentMaterial = nullptr;
 
@@ -58,7 +61,8 @@ namespace Roose {
                 }
                 else if (prefix == "map_Kd")
                 {
-                    iss >> currentMaterial->Texture;
+                    iss >> currentMaterial->TexturePath;
+                    currentMaterial->TexturePath = FileSystemUtils::JoinPaths(directory, currentMaterial->TexturePath);
                 }
             }
         }

@@ -9,8 +9,8 @@ namespace Roose {
 	public:
 		GraphicsContext(GLFWwindow* windowHandle);
 
-		void Init();
-		void SwapBuffers();
+		void Init() const;
+		void SwapBuffers() const;
 
 		static Scope<GraphicsContext> Create(GLFWwindow* window);
 	private:
