@@ -11,8 +11,8 @@ namespace Roose {
         MouseMoveEvent(const float x, const float y)
             : m_MouseX(x), m_MouseY(y) {}
 
-        float GetX() const { return m_MouseX; }
-        float GetY() const { return m_MouseY; }
+        [[nodiscard]] float GetX() const { return m_MouseX; }
+        [[nodiscard]] float GetY() const { return m_MouseY; }
 
         std::string ToString() const override
         {
@@ -33,8 +33,8 @@ namespace Roose {
         MouseScrollEvent(const float xOffset, const float yOffset)
             : m_XOffset(xOffset), m_YOffset(yOffset) {}
 
-        float GetXOffset() const { return m_XOffset; }
-        float GetYOffset() const { return m_YOffset; }
+        [[nodiscard]] float GetXOffset() const { return m_XOffset; }
+        [[nodiscard]] float GetYOffset() const { return m_YOffset; }
 
         std::string ToString() const override
         {

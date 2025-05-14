@@ -68,6 +68,7 @@ namespace Roose {
 
     void Material::LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl)
     {
+        // Note: It could be worth considering using a Uniform Buffer for material data instead of individual uniforms
         SetUniform("u_Ambient", ShaderDataType::Float3, mtl.Ka);
         SetUniform("u_Diffuse", ShaderDataType::Float3, mtl.Kd);
         SetUniform("u_Specular", ShaderDataType::Float3, mtl.Ks);

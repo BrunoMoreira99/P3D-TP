@@ -2,6 +2,7 @@
 
 #include <Roose/Core/Base.h>
 #include <Roose/RenderableObject.h>
+
 #include "GameObject.h"
 
 class BallGameObject : public GameObject

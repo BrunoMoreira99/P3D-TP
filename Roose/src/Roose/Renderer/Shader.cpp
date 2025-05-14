@@ -254,6 +254,8 @@ namespace Roose {
 
     Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
     {
+        if (const std::string name = FileSystemUtils::GetFileNameWithoutExtension(filepath); Exists(name))
+            return Get(name);
         const Ref<Shader> shader = Shader::FromGLSLTextFile(filepath);
         Add(shader);
         return shader;

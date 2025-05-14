@@ -62,6 +62,9 @@ namespace Roose {
         // Set GLFW callbacks
         glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, const int32_t width, const int32_t height)
         {
+            // If both width and height are 0, ignore the event (this happens when the window is minimized)
+            if (width == 0 && height == 0) return;
+
             WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
             data.Width = width;
             data.Height = height;
@@ -72,14 +75,14 @@ namespace Roose {
 
         glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
         {
-            WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+            const WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
             WindowCloseEvent event;
             data.EventCallback(event);
         });
 
         glfwSetKeyCallback(m_Window, [](GLFWwindow* window, const int32_t key, const int32_t scancode, const int32_t action, const int32_t mods)
         {
-            WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+            const WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
             switch (action)
             {
@@ -106,7 +109,7 @@ namespace Roose {
 
         glfwSetCharCallback(m_Window, [](GLFWwindow* window, const uint32_t keycode)
         {
-            WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+            const WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
             KeyPressEvent event(keycode);
             data.EventCallback(event);
@@ -114,7 +117,7 @@ namespace Roose {
 
         glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, const int32_t button, const int32_t action, const int32_t mods)
         {
-            WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+            const WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
             switch (action)
             {
@@ -135,15 +138,15 @@ namespace Roose {
 
         glfwSetScrollCallback(m_Window, [](GLFWwindow* window, const double xOffset, const double yOffset)
         {
-            WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+            const WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
-            MouseScrollEvent event((float)xOffset, (float)yOffset);
+            MouseScrollEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
             data.EventCallback(event);
         });
 
         glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, const double xPos, const double yPos)
         {
-            WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+            const WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 
             MouseMoveEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
             data.EventCallback(event);
@@ -173,10 +176,38 @@ namespace Roose {
         m_Data.Title = title;
     }
 
+    void Window::ToggleFullscreen()
+    {
+        if (!m_Data.Fullscreen)
+        {
+            m_SavedWindowWidth = static_cast<int32_t>(m_Data.Width);
+            m_SavedWindowHeight = static_cast<int32_t>(m_Data.Height);
+            glfwGetWindowPos(m_Window, &m_SavedWindowX, &m_SavedWindowY);
+            const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            glfwSetWindowMonitor(m_Window, glfwGetPrimaryMonitor(), 0, 0,
+                mode->width, mode->height, mode->refreshRate);
+            m_Data.Width = mode->width;
+            m_Data.Height = mode->height;
+            m_Data.Fullscreen = true;
+        }
+        else
+        {
+            glfwSetWindowMonitor(m_Window, nullptr, m_SavedWindowX, m_SavedWindowY,
+                m_SavedWindowWidth, m_SavedWindowHeight, 0);
+            m_Data.Fullscreen = false;
+        }
+    }
+
     void Window::SetVSync(const bool enabled)
     {
         glfwSwapInterval(enabled ? 1 : 0);
         m_Data.VSync = enabled;
+    }
+
+    void Window::SetCursorMode(const WindowCursorMode mode)
+    {
+        glfwSetInputMode(m_Window, GLFW_CURSOR, static_cast<int32_t>(mode));
+        m_Data.CursorMode = mode;
     }
 
     bool Window::IsVSync() const

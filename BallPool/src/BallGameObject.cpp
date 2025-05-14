@@ -11,5 +11,5 @@ BallGameObject::BallGameObject(const std::string& objModelFilePath)
 void BallGameObject::Render() const
 {
     m_RenderableObject->SetMaterial(m_Material);
-    m_RenderableObject->Render(GetPosition(), GetRotation());
+    m_RenderableObject->Render(Transform.Translation, Transform.Rotation);
 }

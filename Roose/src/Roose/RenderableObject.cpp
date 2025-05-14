@@ -1,8 +1,8 @@
 #include "rspch.h"
-#include "RenderableObject.h"
+#include "Roose/RenderableObject.h"
 
 #include "Roose/Renderer/Model.h"
-#include "glm/gtx/quaternion.hpp"
+#include <glm/gtx/quaternion.hpp>
 
 namespace Roose {
 
