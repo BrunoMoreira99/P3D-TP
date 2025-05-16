@@ -1,7 +1,6 @@
 #include "rspch.h"
 #include "Roose/Renderer/Material.h"
-
-#include "Renderer.h"
+#include "Roose/Renderer/Renderer.h"
 
 namespace Roose {
 
