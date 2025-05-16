@@ -12,7 +12,9 @@ namespace Roose {
         ~Shader();
 
         static Ref<Shader> FromGLSLTextFile(const std::string& shaderPath);
-        static Ref<Shader> FromGLSLTextFiles(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+        static Ref<Shader> FromGLSLTextFile(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+        static Ref<Shader> FromGLSLString(const std::string& name, const std::string& source);
+        static Ref<Shader> FromGLSLString(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource);
 
         void Bind() const;
         void Unbind() const;
@@ -32,8 +34,9 @@ namespace Roose {
 
         [[nodiscard]] const std::string& GetName() const { return m_Name; }
     private:
-        void LoadFromSingleGLSLTextFile(const std::string& shaderPath);
-        void LoadFromGLSLTextFiles(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+        void LoadFromGLSLTextFile(const std::string& shaderPath);
+        void LoadFromGLSLTextFile(const std::string& vertexShaderPath, const std::string& fragmentShaderPath);
+        void CreateFromGLSL(const std::string& source);
         void CreateFromGLSL(const std::string& vertexSource, const std::string& fragmentSource);
         GLuint CompileShader(GLenum type, const std::string& source);
 

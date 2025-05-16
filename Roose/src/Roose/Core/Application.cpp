@@ -20,6 +20,7 @@ namespace Roose {
         m_Window->SetEventCallback(RS_BIND_EVENT_FN(Application::OnEvent));
 
         Renderer::Init();
+        Renderer::SetViewport(0, 0, m_Window->GetWidth(), m_Window->GetHeight());
     }
 
     Application::~Application()

@@ -7,6 +7,7 @@
 
 #include <Roose/Core/Application.h>
 #include <Roose/Renderer/Renderer.h>
+#include "Roose/Renderer/Framebuffer.h"
 #include <Roose/Renderer/UniformBuffer.h>
 #include <Roose/Input/Input.h>
 #include <Roose/Scene/OrthographicCamera.h>
@@ -24,14 +25,14 @@ struct BallPoolData
         glm::vec4 Position; // Must be vec4 to prevent memory alignment issues
     };
 
-    CameraData CameraBuffer;
-    Roose::Ref<Roose::UniformBuffer> CameraUniformBuffer;
-
+    CameraData MainCameraBuffer;
     CameraData TopViewCameraBuffer;
-    Roose::Ref<Roose::UniformBuffer> TopViewCameraUniformBuffer;
     Roose::OrthographicCamera TopViewCamera;
+    Roose::Ref<Roose::Framebuffer> TopViewFramebuffer;
 
     Roose::Ref<Roose::Shader> BlinnPhongShader;
+    Roose::Ref<Roose::Shader> UnlitShader;
+    Roose::Ref<Roose::Shader> FullscreenUnlit2DShader;
 
     // Light Sources
     AmbientLight AmbientLight;
@@ -45,6 +46,9 @@ struct BallPoolData
 };
 
 static BallPoolData s_Data;
+constexpr uint32_t s_TopViewFramebufferWidth = 640;
+constexpr uint32_t s_TopViewFramebufferHeight = 360;
+constexpr float s_TopViewFramebufferAspectRatio = 640.0f / 360.0f;
 
 BallPoolLayer::BallPoolLayer() : Layer("BallPoolLayer") {}
 
@@ -59,7 +63,6 @@ void BallPoolLayer::OnAttach()
     // Load shaders
     s_Data.BlinnPhongShader = Roose::ShaderLibrary::Load("assets/shaders/BlinnPhong.glsl");
     s_Data.UnlitShader = Roose::ShaderLibrary::Load("assets/shaders/Unlit.glsl");
-    s_Data.FullscreenUnlit2DShader = Roose::ShaderLibrary::Load("assets/shaders/FullscreenUnlit2D.glsl");
 
     // Load the billiard balls.
     // Since all billiard balls share the same mesh, we'll load one mesh and reuse it for all balls.
@@ -100,7 +103,7 @@ void BallPoolLayer::OnAttach()
     }
 
     // Set up the top view camera
-    s_Data.TopViewCamera.SetViewportSize(App->GetWindow().GetWidth(), App->GetWindow().GetHeight());
+    s_Data.TopViewCamera.SetViewportSize(s_TopViewFramebufferWidth, s_TopViewFramebufferHeight);
     s_Data.TopViewCamera.SetSize(50.0f);
     glm::mat4 topViewCameraView = glm::lookAt(
         glm::vec3(0.0f, 10.0f, 0.0f), // Camera position
@@ -113,17 +116,15 @@ void BallPoolLayer::OnAttach()
     // Combine the rotation with the view matrix
     topViewCameraView = rotationMatrix * topViewCameraView;
     s_Data.TopViewCameraBuffer.ViewProjection = s_Data.TopViewCamera.GetProjection() * topViewCameraView;
-    s_Data.TopViewCameraUniformBuffer = Roose::UniformBuffer::Create(sizeof(BallPoolData::CameraData), 1);
-    s_Data.TopViewCameraUniformBuffer->SetData(&s_Data.TopViewCameraBuffer, sizeof(BallPoolData::CameraData));
-
-    // Create a uniform buffer for the main camera
-    s_Data.CameraUniformBuffer = Roose::UniformBuffer::Create(sizeof(BallPoolData::CameraData), 0);
+    s_Data.TopViewFramebuffer = Roose::Framebuffer::Create({
+        s_TopViewFramebufferWidth, s_TopViewFramebufferHeight,
+        { Roose::FramebufferTextureFormat::RGBA8 }
+    });
 
     // Set up initial light source uniforms
     s_Data.DirectionalLight.SetColor({0.94f, 0.434f, 0.79f});
     s_Data.SpotLight.SetColor({0.75f, 0.0f, 0.0f});
     s_Data.ConeLight.SetColor({0.52f, 0.19f, 0.135f});
-    s_Data.BlinnPhongShader->Bind();
     s_Data.AmbientLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_AmbientLight");
     s_Data.DirectionalLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_DirLight");
     s_Data.SpotLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_SpotLight");
@@ -143,9 +144,9 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
 
     // Update camera
     m_CameraController.OnUpdate(deltaTime);
-    s_Data.CameraBuffer.Position = glm::vec4(m_CameraController.GetPosition(), 0.0f);
-    s_Data.CameraBuffer.ViewProjection = m_CameraController.GetViewProjection();
-    s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(BallPoolData::CameraData));
+    s_Data.MainCameraBuffer.Position = glm::vec4(m_CameraController.GetPosition(), 0.0f);
+    s_Data.MainCameraBuffer.ViewProjection = m_CameraController.GetViewProjection();
+    Roose::Renderer::GetCameraUniformBuffer()->SetData(&s_Data.MainCameraBuffer, sizeof(BallPoolData::CameraData));
 
     // Update light sources
     s_Data.AmbientLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_AmbientLight");
@@ -156,12 +157,32 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     // Render
     Roose::Renderer::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
     Roose::Renderer::Clear();
+    s_Data.BlinnPhongShader->Bind();
     for (const auto& gameObject : s_Data.BilliardBalls)
     {
         gameObject.Render();
     }
 
-    // TODO: Draw the table and minimap
+    // Draw minimap
+    Roose::Renderer::GetCameraUniformBuffer()->SetData(&s_Data.TopViewCameraBuffer, sizeof(BallPoolData::CameraData));
+    s_Data.TopViewFramebuffer->Bind();
+    s_Data.UnlitShader->Bind();
+    for (const auto& gameObject : s_Data.BilliardBalls)
+    {
+        gameObject.Render();
+    }
+    s_Data.TopViewFramebuffer->Unbind();
+    Roose::Renderer::SetViewport(0, 0, App->GetWindow().GetWidth(), App->GetWindow().GetHeight());
+    const uint32_t textureID = s_Data.TopViewFramebuffer->GetColorAttachmentRendererID();
+    glBindTextureUnit(0, textureID);
+    const float screenWidth = static_cast<float>(App->GetWindow().GetWidth());
+    const float minimapScale = screenWidth / 1600.0f;
+    const float minimapWidth  = 320.0f * minimapScale;
+    const float minimapHeight = minimapWidth / s_TopViewFramebufferAspectRatio;
+    const float padding = 25.0f * minimapScale;
+    const float minimapX = minimapWidth / 2.0f + padding;
+    const float minimapY = minimapHeight / 2.0f + padding;
+    Roose::Renderer::DrawQuad(minimapX, minimapY, minimapWidth, minimapHeight);
 }
 
 void BallPoolLayer::OnEvent(Roose::Event& e)

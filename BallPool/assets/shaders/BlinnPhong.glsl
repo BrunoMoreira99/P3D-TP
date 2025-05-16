@@ -11,7 +11,10 @@ layout(std140, binding = 0) uniform Camera
     vec4 Position;
 } u_Camera;
 
-uniform mat4 u_Transform; // Model matrix
+layout(std140, binding = 1) uniform Model
+{
+    mat4 u_Transform;
+};
 
 struct VertexOutput
 {
@@ -54,11 +57,13 @@ layout(std140, binding = 0) uniform Camera
     vec4 Position;
 } u_Camera;
 
-// Material properties
-uniform vec3 u_Ambient;    // Ambient reflectivity (Ka)
-uniform vec3 u_Diffuse;    // Diffuse reflectivity (Kd)
-uniform vec3 u_Specular;   // Specular reflectivity (Ks)
-uniform float u_Shininess; // Shininess (Ns)
+layout(std140, binding = 2) uniform MaterialData
+{
+    vec4 u_Diffuse;    // Diffuse reflectivity (Kd)
+    vec4 u_Ambient;    // Ambient reflectivity (Ka)
+    vec4 u_Specular;   // Specular reflectivity (Ks)
+    float u_Shininess; // Shininess (Ns)
+};
 
 // Light sources
 struct AmbientLight {
@@ -142,10 +147,15 @@ void main()
     vec3 V = normalize(vec3(u_Camera.Position) - v_Input.Position); // View vector
     vec3 result = vec3(0.0);
 
-    result += CalcAmbientLight(u_AmbientLight, u_Ambient);
-    result += CalcDirectionalLight(u_DirLight, N, V, u_Diffuse, u_Specular, u_Shininess);
-    result += CalcSpotLight(u_SpotLight, v_Input.Position, N, V, u_Diffuse, u_Specular, u_Shininess);
-    result += CalcConeLight(u_ConeLight, v_Input.Position, N, V, u_Diffuse, u_Specular, u_Shininess);
+    // Convert vec4 material properties to vec3
+    vec3 ambientMat = u_Ambient.rgb;
+    vec3 diffuseMat = u_Diffuse.rgb;
+    vec3 specularMat = u_Specular.rgb;
+
+    result += CalcAmbientLight(u_AmbientLight, ambientMat);
+    result += CalcDirectionalLight(u_DirLight, N, V, diffuseMat, specularMat, u_Shininess);
+    result += CalcSpotLight(u_SpotLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
+    result += CalcConeLight(u_ConeLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
 
     vec4 textureColor = texture(u_Texture, v_Input.TexCoord); // Sample the texture
     o_Color = vec4(result, 1.0) * textureColor; // Combine lighting with texture color

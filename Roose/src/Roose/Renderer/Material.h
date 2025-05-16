@@ -11,6 +11,14 @@ namespace Roose {
     {
     public:
 
+        struct BlinnPhongMaterialData
+        {
+            glm::vec4 Diffuse;
+            glm::vec4 Ambient;
+            glm::vec4 Specular;
+            float Shininess;
+        };
+
         struct Uniform
         {
             ShaderDataType type;
@@ -18,8 +26,8 @@ namespace Roose {
             std::vector<uint8_t> value;
         };
 
-        Material(const Ref<Shader>& shader, const std::string& name)
-            : m_Shader(shader), m_Name(name) {}
+        Material(const std::string& name)
+            : m_Name(name) {}
 
         [[nodiscard]] const std::string& GetName() const { return m_Name; }
         [[nodiscard]] const Ref<Shader>& GetShader() const { return m_Shader; }
@@ -27,18 +35,20 @@ namespace Roose {
         template<typename T>
         void SetUniform(const std::string& name, ShaderDataType type, const T& value);
         void SetTexture(const std::string& name, const Ref<Texture2D>& texture);
+        void SetShader(const Ref<Shader>& shader) { m_Shader = shader; }
 
         void Bind() const;
 
-        static Ref<Material> Create(const Ref<Shader>& shader, const std::string& name);
+        static Ref<Material> Create(const std::string& name);
         static Ref<Material> Create(const WavefrontMTLMaterial& mtl, const std::string& name);
     private:
         void LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl);
     private:
-        Ref<Shader> m_Shader;
         std::string m_Name;
         std::vector<Uniform> m_Uniforms;
         std::unordered_map<std::string, Ref<Texture2D>> m_Textures;
+        BlinnPhongMaterialData m_MaterialData = {};
+        Ref<Shader> m_Shader = nullptr;
     };
 
     class MaterialLibrary

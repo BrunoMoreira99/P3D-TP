@@ -41,20 +41,51 @@ namespace Roose {
     Ref<Shader> Shader::FromGLSLTextFile(const std::string& shaderPath)
     {
         Ref<Shader> shader = CreateRef<Shader>();
-        shader->LoadFromSingleGLSLTextFile(shaderPath);
+        shader->LoadFromGLSLTextFile(shaderPath);
         return shader;
     }
 
-    Ref<Shader> Shader::FromGLSLTextFiles(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+    Ref<Shader> Shader::FromGLSLTextFile(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
     {
         Ref<Shader> shader = CreateRef<Shader>();
-        shader->LoadFromGLSLTextFiles(vertexShaderPath, fragmentShaderPath);
+        shader->LoadFromGLSLTextFile(vertexShaderPath, fragmentShaderPath);
         return shader;
     }
 
-    void Shader::LoadFromSingleGLSLTextFile(const std::string& shaderPath)
+    Ref<Shader> Shader::FromGLSLString(const std::string& name, const std::string& source)
+    {
+        Ref<Shader> shader = CreateRef<Shader>();
+        shader->m_Name = name;
+        shader->CreateFromGLSL(source);
+        return shader;
+    }
+
+    Ref<Shader> Shader::FromGLSLString(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
+    {
+        Ref<Shader> shader = CreateRef<Shader>();
+        shader->m_Name = name;
+        shader->CreateFromGLSL(vertexSource, fragmentSource);
+        return shader;
+    }
+
+    void Shader::LoadFromGLSLTextFile(const std::string& shaderPath)
     {
         std::string source = FileSystemUtils::ReadFileAsString(shaderPath);
+        m_Name = FileSystemUtils::GetFileNameWithoutExtension(shaderPath);
+        CreateFromGLSL(source);
+    }
+
+    void Shader::LoadFromGLSLTextFile(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
+    {
+        const std::string vertexSource = FileSystemUtils::ReadFileAsString(vertexShaderPath);
+        const std::string fragmentSource = FileSystemUtils::ReadFileAsString(fragmentShaderPath);
+
+        m_Name = FileSystemUtils::GetFileNameWithoutExtension(vertexShaderPath);
+        CreateFromGLSL(vertexSource, fragmentSource);
+    }
+
+    void Shader::CreateFromGLSL(const std::string& source)
+    {
         enum class ShaderType : int8_t
         {
             None = -1, Vertex, Fragment
@@ -92,25 +123,15 @@ namespace Roose {
 
         if (vertexSource.empty())
         {
-            RS_ERROR("Shader '%s' is missing vertex shader code", shaderPath.c_str());
+            RS_ERROR("Shader '%s' is missing vertex shader code", m_Name.c_str());
             return;
         }
         if (fragmentSource.empty())
         {
-            RS_ERROR("Shader '%s' is missing fragment shader code", shaderPath.c_str());
+            RS_ERROR("Shader '%s' is missing fragment shader code", m_Name.c_str());
             return;
         }
 
-        m_Name = FileSystemUtils::GetFileNameWithoutExtension(shaderPath);
-        CreateFromGLSL(vertexSource, fragmentSource);
-    }
-
-    void Shader::LoadFromGLSLTextFiles(const std::string& vertexShaderPath, const std::string& fragmentShaderPath)
-    {
-        const std::string vertexSource = FileSystemUtils::ReadFileAsString(vertexShaderPath);
-        const std::string fragmentSource = FileSystemUtils::ReadFileAsString(fragmentShaderPath);
-
-        m_Name = FileSystemUtils::GetFileNameWithoutExtension(vertexShaderPath);
         CreateFromGLSL(vertexSource, fragmentSource);
     }
 
@@ -164,62 +185,62 @@ namespace Roose {
     #pragma region Uniforms
     void Shader::SetBool(const std::string& name, const bool value)
     {
-        glUniform1i(GetUniformLocation(name), static_cast<int>(value));
+        glProgramUniform1i(m_RendererID, GetUniformLocation(name), static_cast<int>(value));
     }
 
     void Shader::SetUInt(const std::string& name, const uint32_t value)
     {
-        glUniform1ui(GetUniformLocation(name), value);
+        glProgramUniform1ui(m_RendererID, GetUniformLocation(name), value);
     }
 
     void Shader::SetInt(const std::string& name, const int value)
     {
-        glUniform1i(GetUniformLocation(name), value);
+        glProgramUniform1i(m_RendererID, GetUniformLocation(name), value);
     }
 
     void Shader::SetInt2(const std::string& name, const glm::ivec2& value)
     {
-        glUniform2i(GetUniformLocation(name), value.x, value.y);
+        glProgramUniform2i(m_RendererID, GetUniformLocation(name), value.x, value.y);
     }
 
     void Shader::SetInt3(const std::string& name, const glm::ivec3& value)
     {
-        glUniform3i(GetUniformLocation(name), value.x, value.y, value.z);
+        glProgramUniform3i(m_RendererID, GetUniformLocation(name), value.x, value.y, value.z);
     }
 
     void Shader::SetInt4(const std::string& name, const glm::ivec4& value)
     {
-        glUniform4i(GetUniformLocation(name), value.x, value.y, value.z, value.w);
+        glProgramUniform4i(m_RendererID, GetUniformLocation(name), value.x, value.y, value.z, value.w);
     }
 
     void Shader::SetFloat(const std::string& name, const float value)
     {
-        glUniform1f(GetUniformLocation(name), value);
+        glProgramUniform1f(m_RendererID, GetUniformLocation(name), value);
     }
 
     void Shader::SetFloat2(const std::string& name, const glm::vec2& value)
     {
-        glUniform2f(GetUniformLocation(name), value.x, value.y);
+        glProgramUniform2f(m_RendererID, GetUniformLocation(name), value.x, value.y);
     }
 
     void Shader::SetFloat3(const std::string& name, const glm::vec3& value)
     {
-        glUniform3f(GetUniformLocation(name), value.x, value.y, value.z);
+        glProgramUniform3f(m_RendererID, GetUniformLocation(name), value.x, value.y, value.z);
     }
 
     void Shader::SetFloat4(const std::string& name, const glm::vec4& value)
     {
-        glUniform4f(GetUniformLocation(name), value.x, value.y, value.z, value.w);
+        glProgramUniform4f(m_RendererID, GetUniformLocation(name), value.x, value.y, value.z, value.w);
     }
 
     void Shader::SetMat3(const std::string& name, const glm::mat3& matrix)
     {
-        glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
+        glProgramUniformMatrix3fv(m_RendererID, GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
     }
 
     void Shader::SetMat4(const std::string& name, const glm::mat4& matrix)
     {
-        glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
+        glProgramUniformMatrix4fv(m_RendererID, GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]);
     }
 
     GLint Shader::GetUniformLocation(const std::string& name)

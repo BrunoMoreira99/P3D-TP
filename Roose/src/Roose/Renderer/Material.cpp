@@ -1,19 +1,21 @@
 #include "rspch.h"
 #include "Roose/Renderer/Material.h"
 
+#include "Renderer.h"
+
 namespace Roose {
 
     #pragma region Material
-    Ref<Material> Material::Create(const Ref<Shader>& shader, const std::string& name)
+    Ref<Material> Material::Create(const std::string& name)
     {
-        const Ref<Material> material = CreateRef<Material>(shader, name);
+        const Ref<Material> material = CreateRef<Material>(name);
         MaterialLibrary::Add(name, material);
         return material;
     }
 
     Ref<Material> Material::Create(const WavefrontMTLMaterial& mtl, const std::string& name)
     {
-        const Ref<Material> material = Create(ShaderLibrary::Get("BlinnPhong"), name);
+        const Ref<Material> material = Create(name);
         material->LoadFromWavefrontMTL(mtl);
         return material;
     }
@@ -37,42 +39,47 @@ namespace Roose {
 
     void Material::Bind() const
     {
-        m_Shader->Bind();
-        for (const auto& [type, name, value] : m_Uniforms)
+        Renderer::GetMaterialDataUniformBuffer()->SetData(&m_MaterialData, sizeof(BlinnPhongMaterialData));
+
+        if (m_Shader)
         {
-            const void* data = value.data();
-            switch (type)
+            m_Shader->Bind();
+            for (const auto& [type, name, value] : m_Uniforms)
             {
-                case ShaderDataType::Float:  m_Shader->SetFloat (name, *static_cast<const float*>(data));      break;
-                case ShaderDataType::Float2: m_Shader->SetFloat2(name, *static_cast<const glm::vec2*>(data));  break;
-                case ShaderDataType::Float3: m_Shader->SetFloat3(name, *static_cast<const glm::vec3*>(data));  break;
-                case ShaderDataType::Float4: m_Shader->SetFloat4(name, *static_cast<const glm::vec4*>(data));  break;
-                case ShaderDataType::Mat3:   m_Shader->SetMat3  (name, *static_cast<const glm::mat3*>(data));  break;
-                case ShaderDataType::Mat4:   m_Shader->SetMat4  (name, *static_cast<const glm::mat4*>(data));  break;
-                case ShaderDataType::Int:    m_Shader->SetInt   (name, *static_cast<const int*>(data));        break;
-                case ShaderDataType::Int2:   m_Shader->SetInt2  (name, *static_cast<const glm::ivec2*>(data)); break;
-                case ShaderDataType::Int3:   m_Shader->SetInt3  (name, *static_cast<const glm::ivec3*>(data)); break;
-                case ShaderDataType::Int4:   m_Shader->SetInt4  (name, *static_cast<const glm::ivec4*>(data)); break;
-                case ShaderDataType::Bool:   m_Shader->SetBool  (name, *static_cast<const bool*>(data));       break;
-                default: RS_ASSERT(false, "Unknown ShaderDataType!")                                           break;
+                const void* data = value.data();
+                switch (type)
+                {
+                    case ShaderDataType::Float:  m_Shader->SetFloat (name, *static_cast<const float*>(data));      break;
+                    case ShaderDataType::Float2: m_Shader->SetFloat2(name, *static_cast<const glm::vec2*>(data));  break;
+                    case ShaderDataType::Float3: m_Shader->SetFloat3(name, *static_cast<const glm::vec3*>(data));  break;
+                    case ShaderDataType::Float4: m_Shader->SetFloat4(name, *static_cast<const glm::vec4*>(data));  break;
+                    case ShaderDataType::Mat3:   m_Shader->SetMat3  (name, *static_cast<const glm::mat3*>(data));  break;
+                    case ShaderDataType::Mat4:   m_Shader->SetMat4  (name, *static_cast<const glm::mat4*>(data));  break;
+                    case ShaderDataType::Int:    m_Shader->SetInt   (name, *static_cast<const int*>(data));        break;
+                    case ShaderDataType::Int2:   m_Shader->SetInt2  (name, *static_cast<const glm::ivec2*>(data)); break;
+                    case ShaderDataType::Int3:   m_Shader->SetInt3  (name, *static_cast<const glm::ivec3*>(data)); break;
+                    case ShaderDataType::Int4:   m_Shader->SetInt4  (name, *static_cast<const glm::ivec4*>(data)); break;
+                    case ShaderDataType::Bool:   m_Shader->SetBool  (name, *static_cast<const bool*>(data));       break;
+                    default: RS_ASSERT(false, "Unknown ShaderDataType!")                                           break;
+                }
             }
         }
+
         uint8_t textureUnit = 0;
         for (const auto& [name, texture] : m_Textures)
         {
             texture->Bind(textureUnit);
-            m_Shader->SetInt(name, textureUnit);
+            if (m_Shader) m_Shader->SetInt(name, textureUnit);
             textureUnit++;
         }
     }
 
     void Material::LoadFromWavefrontMTL(const WavefrontMTLMaterial& mtl)
     {
-        // Note: It could be worth considering using a Uniform Buffer for material data instead of individual uniforms
-        SetUniform("u_Ambient", ShaderDataType::Float3, mtl.Ka);
-        SetUniform("u_Diffuse", ShaderDataType::Float3, mtl.Kd);
-        SetUniform("u_Specular", ShaderDataType::Float3, mtl.Ks);
-        SetUniform("u_Shininess", ShaderDataType::Float, mtl.Ns);
+        m_MaterialData.Diffuse = glm::vec4(mtl.Kd, 0.0f);
+        m_MaterialData.Ambient = glm::vec4(mtl.Ka, 0.0f);
+        m_MaterialData.Specular = glm::vec4(mtl.Ks, 0.0f);
+        m_MaterialData.Shininess = mtl.Ns;
 
         if (!mtl.TexturePath.empty())
         {

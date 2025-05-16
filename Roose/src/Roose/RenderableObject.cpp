@@ -2,6 +2,8 @@
 #include "Roose/RenderableObject.h"
 
 #include "Roose/Renderer/Model.h"
+#include "Roose/Renderer/Renderer.h"
+
 #include <glm/gtx/quaternion.hpp>
 
 namespace Roose {
@@ -82,6 +84,8 @@ namespace Roose {
         if (m_MeshesEntries.empty()) return;
         m_VAO->Bind();
 
+        Renderer::GetModelUniformBuffer()->SetData(&transform, sizeof(glm::mat4));
+
         uint32_t indexOffset = 0;
         size_t i = 0;
         while (i < m_MeshesEntries.size()) {
@@ -95,7 +99,6 @@ namespace Roose {
             }
             // Bind once for this material and draw all meshes with the same material at once
             currentMaterial->Bind();
-            currentMaterial->GetShader()->SetMat4("u_Transform", transform);
             glDrawElements(
                 GL_TRIANGLES,
                 static_cast<GLsizei>(groupIndexCount),

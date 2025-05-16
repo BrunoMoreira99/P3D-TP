@@ -38,3 +38,13 @@ project "BallPool"
         defines { "RS_RELEASE" }
         runtime "Release"
         optimize "On"
+
+    filter "configurations:Dist"
+        defines { "RS_DIST" }
+        runtime "Release"
+        optimize "On"
+
+        postbuildcommands
+        {
+            "{COPYDIR} assets %{cfg.targetdir}/assets"
+        }
