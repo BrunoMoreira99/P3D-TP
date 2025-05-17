@@ -16,6 +16,7 @@ public:
     void OnDetach() override;
 
     void OnUpdate(Roose::Timestep deltaTime) override;
+    void OnFixedUpdate(Roose::Timestep fixedDeltaTime) override;
 
     void OnEvent(Roose::Event& e) override;
     bool OnKeyDown(const Roose::KeyDownEvent& e);

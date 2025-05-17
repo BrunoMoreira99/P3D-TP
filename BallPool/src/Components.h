@@ -21,3 +21,13 @@ struct TransformComponent
             * glm::scale(glm::mat4(1.0f), Scale);
     }
 };
+
+struct RigidBodyComponent
+{
+    glm::vec3 Velocity = { 0.0f, 0.0f, 0.0f };
+    glm::vec3 Acceleration = { 0.0f, 0.0f, 0.0f };
+    float Mass = 1.0f;
+    float Restitution = 0.9f; // Coefficient of restitution (bounciness)
+
+    void ApplyForce(const glm::vec3& force) { Acceleration += force / Mass; }
+};

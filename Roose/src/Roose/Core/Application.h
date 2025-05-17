@@ -56,6 +56,8 @@ namespace Roose {
         bool m_Minimized = false;
         LayerStack m_LayerStack;
         float m_LastFrameTime = 0.0f;
+        float m_FixedTimeStep = 1.0f / 50.0f;
+        float m_FixedTimeAccumulator = 0.0f;
 
         std::vector<std::function<void()>> m_MainThreadQueue;
     private:

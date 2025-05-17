@@ -62,9 +62,6 @@ namespace Roose {
         // Set GLFW callbacks
         glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, const int32_t width, const int32_t height)
         {
-            // If both width and height are 0, ignore the event (this happens when the window is minimized)
-            if (width == 0 && height == 0) return;
-
             WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
             data.Width = width;
             data.Height = height;

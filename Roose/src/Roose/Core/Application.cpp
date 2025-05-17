@@ -62,6 +62,15 @@ namespace Roose {
 
             if (!m_Minimized)
             {
+                // FixedUpdate for physics simulation
+                m_FixedTimeAccumulator += deltaTime;
+                while (m_FixedTimeAccumulator >= m_FixedTimeStep)
+                {
+                    for (Layer* layer : m_LayerStack)
+                        layer->OnFixedUpdate(m_FixedTimeStep);
+                    m_FixedTimeAccumulator -= m_FixedTimeStep;
+                }
+
                 for (Layer* layer : m_LayerStack)
                     layer->OnUpdate(deltaTime);
             }

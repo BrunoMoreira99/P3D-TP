@@ -68,36 +68,37 @@ void BallPoolLayer::OnAttach()
     // Since all billiard balls share the same mesh, we'll load one mesh and reuse it for all balls.
     // This will also reuse the same VAO, VBO, and IBO.
     // We'll load the materials separately and assign them to the corresponding ball.
-    s_Data.BilliardBalls.emplace_back("assets/models/Ball1.obj");
+    s_Data.BilliardBalls.emplace_back("assets/models/Ball0.obj");
 
     constexpr float spacing = 2.05f;
-    constexpr glm::vec3 rackOrigin = { 0.0f, 0.0f, 0.0f };
+    constexpr glm::vec3 rackOrigin   = { 0.0f, 0.0f, 0.0f };
     constexpr glm::vec3 ballRotation = { -0.75f, 0.0f, 0.0f };
 
-    std::unordered_map<uint8_t, glm::vec3> ballPositions = {
-        { 0, rackOrigin + glm::vec3(0.0f, 0.0f, 2.0f * spacing) },
-        { 1, rackOrigin + glm::vec3(-spacing / 2.0f, 0.0f, spacing * 1.0f) },
-        { 2, rackOrigin + glm::vec3( spacing / 2.0f, 0.0f, spacing * 1.0f) },
-        { 3, rackOrigin + glm::vec3(-spacing,        0.0f, 0.0f) },
-        { 7, rackOrigin + glm::vec3(0.0f,            0.0f, 0.0f) },
-        { 4, rackOrigin + glm::vec3( spacing,        0.0f, 0.0f) },
-        { 5, rackOrigin + glm::vec3(-1.5f * spacing, 0.0f, -spacing) },
-        { 6, rackOrigin + glm::vec3(-0.5f * spacing, 0.0f, -spacing) },
-        { 8, rackOrigin + glm::vec3( 0.5f * spacing, 0.0f, -spacing) },
-        { 9, rackOrigin + glm::vec3( 1.5f * spacing, 0.0f, -spacing) },
-        {10, rackOrigin + glm::vec3(-2.0f * spacing, 0.0f, -2.0f * spacing) },
-        {11, rackOrigin + glm::vec3(-spacing,        0.0f, -2.0f * spacing) },
-        {12, rackOrigin + glm::vec3(0.0f,            0.0f, -2.0f * spacing) },
-        {13, rackOrigin + glm::vec3( spacing,        0.0f, -2.0f * spacing) },
-        {14, rackOrigin + glm::vec3( 2.0f * spacing, 0.0f, -2.0f * spacing) }
+    std::vector<glm::vec3> ballPositions = {
+        rackOrigin + glm::vec3( 0.0f,           0.0f, 40.0f),  // Cue ball
+        rackOrigin + glm::vec3( 0.0f,           0.0f, 2.0f * spacing),  // 1
+        rackOrigin + glm::vec3(-spacing / 2.0f, 0.0f, spacing * 1.0f),  // 2
+        rackOrigin + glm::vec3( spacing / 2.0f, 0.0f, spacing * 1.0f),  // 3
+        rackOrigin + glm::vec3(-spacing,        0.0f, 0.0f),            // 4
+        rackOrigin + glm::vec3( spacing,        0.0f, 0.0f),            // 5
+        rackOrigin + glm::vec3(-1.5f * spacing, 0.0f, -spacing),        // 6
+        rackOrigin + glm::vec3(-0.5f * spacing, 0.0f, -spacing),        // 7
+        rackOrigin + glm::vec3( 0.0f,           0.0f, 0.0f),            // 8
+        rackOrigin + glm::vec3( 0.5f * spacing, 0.0f, -spacing),        // 9
+        rackOrigin + glm::vec3( 1.5f * spacing, 0.0f, -spacing),        // 10
+        rackOrigin + glm::vec3(-2.0f * spacing, 0.0f, -2.0f * spacing), // 11
+        rackOrigin + glm::vec3(-spacing,        0.0f, -2.0f * spacing), // 12
+        rackOrigin + glm::vec3( 0.0f,           0.0f, -2.0f * spacing), // 13
+        rackOrigin + glm::vec3( spacing,        0.0f, -2.0f * spacing), // 14
+        rackOrigin + glm::vec3( 2.0f * spacing, 0.0f, -2.0f * spacing)  // 15
     };
 
     s_Data.BilliardBalls[0].Transform.Translation = ballPositions[0];
     s_Data.BilliardBalls[0].Transform.Rotation = ballRotation;
-    for (uint8_t i = 1; i < 15; ++i)
+    for (uint8_t i = 1; i < 16; ++i)
     {
         s_Data.BilliardBalls.emplace_back(s_Data.BilliardBalls[0]); // Copy the first ball
-        s_Data.BilliardBalls[i].SetMaterial(Roose::MaterialLibrary::Load("assets/models/Ball" + std::to_string(i + 1) + ".mtl"));
+        s_Data.BilliardBalls[i].SetMaterial(Roose::MaterialLibrary::Load("assets/models/Ball" + std::to_string(i) + ".mtl"));
         s_Data.BilliardBalls[i].Transform.Translation = ballPositions[i];
         s_Data.BilliardBalls[i].Transform.Rotation = ballRotation;
     }
@@ -142,6 +143,11 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
         s_Data.fpsTimer = 0.0f;
     }
 
+    for (auto& gameObject : s_Data.BilliardBalls)
+    {
+        gameObject.Update(deltaTime);
+    }
+
     // Update camera
     m_CameraController.OnUpdate(deltaTime);
     s_Data.MainCameraBuffer.Position = glm::vec4(m_CameraController.GetPosition(), 0.0f);
@@ -164,8 +170,12 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     }
 
     // Draw minimap
+    // Note: We could technically use a framebuffer with two color attachments and a shader that outputs to both (MRT)
+    // to render the scene and the minimap in one pass, but for simplicity we'll just render the scene again.
     Roose::Renderer::GetCameraUniformBuffer()->SetData(&s_Data.TopViewCameraBuffer, sizeof(BallPoolData::CameraData));
     s_Data.TopViewFramebuffer->Bind();
+    Roose::Renderer::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
+    Roose::Renderer::Clear();
     s_Data.UnlitShader->Bind();
     for (const auto& gameObject : s_Data.BilliardBalls)
     {
@@ -183,6 +193,107 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     const float minimapX = minimapWidth / 2.0f + padding;
     const float minimapY = minimapHeight / 2.0f + padding;
     Roose::Renderer::DrawQuad(minimapX, minimapY, minimapWidth, minimapHeight);
+}
+
+void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
+{
+    // Collision resolution between balls
+    const float radius = s_Data.BilliardBalls[0].GetRadius();
+    const float minDist = 2.0f * radius;
+
+    // Resolve collisions for each unique pair
+    for (size_t i = 0; i < s_Data.BilliardBalls.size(); ++i)
+    {
+        for (size_t j = i + 1; j < s_Data.BilliardBalls.size(); ++j)
+        {
+            auto& ballA = s_Data.BilliardBalls[i];
+            auto& ballB = s_Data.BilliardBalls[j];
+
+            glm::vec3 delta = ballB.Transform.Translation - ballA.Transform.Translation;
+            float dist2 = glm::dot(delta, delta);
+
+            if (dist2 < minDist * minDist)
+            {
+                float dist = glm::sqrt(dist2);
+                if (dist < 1e-6f) dist = minDist; // Prevent division by zero
+
+                // Position correction (minimum translation distance)
+                float penetration = minDist - dist;
+                glm::vec3 correctionDir = delta / dist;
+                glm::vec3 correction = correctionDir * (penetration * 0.5f);
+
+                ballA.Transform.Translation -= correction;
+                ballB.Transform.Translation += correction;
+
+                // Velocity response (elastic collision)
+                glm::vec3 vA = ballA.RigidBody.Velocity;
+                glm::vec3 vB = ballB.RigidBody.Velocity;
+                float mA = ballA.RigidBody.Mass;
+                float mB = ballB.RigidBody.Mass;
+                float restitution = glm::min(ballA.RigidBody.Restitution, ballB.RigidBody.Restitution);
+
+                glm::vec3 normal = correctionDir;
+                float vRel = glm::dot(vB - vA, normal);
+
+                if (vRel < 0.0f) // Only resolve if balls are moving towards each other
+                {
+                    float impulseMag = -(1.0f + restitution) * vRel / (1.0f / mA + 1.0f / mB);
+                    glm::vec3 impulse = impulseMag * normal;
+
+                    ballA.RigidBody.Velocity -= impulse / mA;
+                    ballB.RigidBody.Velocity += impulse / mB;
+                }
+            }
+        }
+    }
+
+    // Table boundaries
+    constexpr float tableMinX = -22.0f;
+    constexpr float tableMaxX =  22.0f;
+    constexpr float tableMinZ = -44.0f;
+    constexpr float tableMaxZ =  44.0f;
+
+    // Ball-table boundary collision
+    for (auto& gameObject : s_Data.BilliardBalls)
+    {
+        glm::vec3& pos = gameObject.Transform.Translation;
+        glm::vec3& vel = gameObject.RigidBody.Velocity;
+        float restitution = gameObject.RigidBody.Restitution;
+
+        // X boundaries
+        if (pos.x - radius < tableMinX)
+        {
+            pos.x = tableMinX + radius;
+            if (vel.x < 0.0f)
+                vel.x = -vel.x * restitution;
+        }
+        else if (pos.x + radius > tableMaxX)
+        {
+            pos.x = tableMaxX - radius;
+            if (vel.x > 0.0f)
+                vel.x = -vel.x * restitution;
+        }
+
+        // Z boundaries
+        if (pos.z - radius < tableMinZ)
+        {
+            pos.z = tableMinZ + radius;
+            if (vel.z < 0.0f)
+                vel.z = -vel.z * restitution;
+        }
+        else if (pos.z + radius > tableMaxZ)
+        {
+            pos.z = tableMaxZ - radius;
+            if (vel.z > 0.0f)
+                vel.z = -vel.z * restitution;
+        }
+    }
+
+    // Update physics for each ball
+    for (auto& gameObject : s_Data.BilliardBalls)
+    {
+        gameObject.FixedUpdate(fixedDeltaTime);
+    }
 }
 
 void BallPoolLayer::OnEvent(Roose::Event& e)
@@ -216,6 +327,10 @@ bool BallPoolLayer::OnKeyDown(const Roose::KeyDownEvent& e)
             break;
         case Roose::Key::Enter:
             if (ctrl) App->GetWindow().ToggleFullscreen();
+            break;
+        case Roose::Key::Space:
+            // Apply force to the cue ball
+            s_Data.BilliardBalls[0].ApplyForce({ 0.0f, 0.0f, -500.0f });
             break;
         case Roose::Key::D1: case Roose::Key::KP1:
             handleLight(s_Data.AmbientLight);

@@ -15,6 +15,7 @@ namespace Roose {
         virtual void OnAttach() {}
         virtual void OnDetach() {}
         virtual void OnUpdate(Timestep ts) {}
+        virtual void OnFixedUpdate(Timestep ts) {}
         virtual void OnEvent(Event& event) {}
 
         [[nodiscard]] const std::string& GetName() const { return m_DebugName; }

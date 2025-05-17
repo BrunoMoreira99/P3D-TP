@@ -20,7 +20,6 @@ public:
     void OnEvent(Roose::Event& e);
 
     [[nodiscard]] const glm::vec3& GetPosition() const { return m_Translation; }
-    void SetPosition(const glm::vec3& position) { m_Translation = position; }
 
     [[nodiscard ]]glm::mat4 GetViewProjection() const;
 private:
