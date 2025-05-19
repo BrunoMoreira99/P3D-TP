@@ -19,33 +19,10 @@ namespace Roose {
             glCreateTextures(TextureTarget(multisampled), static_cast<GLsizei>(count), outID);
         }
 
-        static void AttachColorTexture(
-            const uint32_t framebuffer, const uint32_t id, const uint32_t samples, const GLenum internalFormat,
-            const uint32_t width, const uint32_t height, const uint32_t index
-        ) {
-            if (samples > 1)
-            {
-                glTextureStorage2DMultisample(id, static_cast<GLsizei>(samples), internalFormat,
-                    static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_FALSE);
-            }
-            else
-            {
-                glTextureStorage2D(id, 1, internalFormat, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-                glTextureParameteri(id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTextureParameteri(id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-                glTextureParameteri(id, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-                glTextureParameteri(id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTextureParameteri(id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            }
-
-            glNamedFramebufferTexture(framebuffer, GL_COLOR_ATTACHMENT0 + index, id, 0);
-        }
-
-        static void AttachDepthTexture(const uint32_t framebuffer, const uint32_t id, const uint32_t samples,
+        static void AttachTexture(const uint32_t framebuffer, const uint32_t id, const uint32_t samples,
             const GLenum internalFormat, const GLenum attachmentType, const uint32_t width, const uint32_t height
         ) {
-            const bool multisampled = samples > 1;
-            if (multisampled)
+            if (samples > 1)
             {
                 glTextureStorage2DMultisample(id, static_cast<GLsizei>(samples), internalFormat,
                     static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_FALSE);
@@ -138,9 +115,9 @@ namespace Roose {
 
             for (uint32_t i = 0; i < m_ColorAttachments.size(); i++)
             {
-                Utils::AttachColorTexture(m_RendererID, m_ColorAttachments[i], m_Specification.Samples,
+                Utils::AttachTexture(m_RendererID, m_ColorAttachments[i], m_Specification.Samples,
                     Utils::RooseFBTextureFormatToGL(m_ColorAttachmentSpecifications[i].TextureFormat),
-                    m_Specification.Width, m_Specification.Height, i);
+                    GL_COLOR_ATTACHMENT0 + i, m_Specification.Width, m_Specification.Height);
             }
         }
 
@@ -150,7 +127,7 @@ namespace Roose {
             switch (m_DepthAttachmentSpecification.TextureFormat)
             {
                 case FramebufferTextureFormat::DEPTH24STENCIL8:
-                    Utils::AttachDepthTexture(m_RendererID, m_DepthAttachment, m_Specification.Samples,
+                    Utils::AttachTexture(m_RendererID, m_DepthAttachment, m_Specification.Samples,
                         GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT,
                         m_Specification.Width, m_Specification.Height);
                     break;

@@ -60,8 +60,7 @@ namespace Roose {
         glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
-    Texture2D::Texture2D(const std::string& path)
-        : m_Path(path)
+    Texture2D::Texture2D(const std::string& path) : m_Path(path)
     {
 
         int width, height, channels;

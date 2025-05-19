@@ -40,15 +40,49 @@ struct BallPoolData
     SpotLight SpotLight;
     ConeLight ConeLight;
 
+    Roose::Scope<RenderableGameObject> TableGameObject;
     std::vector<BallGameObject> BilliardBalls;
 
     float fpsTimer = 0.0f;
 };
 
 static BallPoolData s_Data;
-constexpr uint32_t s_TopViewFramebufferWidth = 640;
-constexpr uint32_t s_TopViewFramebufferHeight = 360;
-constexpr float s_TopViewFramebufferAspectRatio = 640.0f / 360.0f;
+
+constexpr float spacing = 2.05f;
+constexpr glm::vec3 rackOrigin = { 0.0f, 0.0f, -20.0f };
+constexpr glm::vec3 InitialBallPositions[16] = {
+    rackOrigin + glm::vec3( 0.0f,           0.0f, 32.5f),           // Cue ball
+    rackOrigin + glm::vec3( 0.0f,           0.0f, 2.0f * spacing),  // 1
+    rackOrigin + glm::vec3(-0.5 * spacing,  0.0f, spacing),         // 2
+    rackOrigin + glm::vec3( 0.5 * spacing,  0.0f, spacing),         // 3
+    rackOrigin + glm::vec3(-spacing,        0.0f, 0.0f),            // 4
+    rackOrigin + glm::vec3( spacing,        0.0f, 0.0f),            // 5
+    rackOrigin + glm::vec3(-1.5f * spacing, 0.0f, -spacing),        // 6
+    rackOrigin + glm::vec3(-0.5f * spacing, 0.0f, -spacing),        // 7
+    rackOrigin + glm::vec3( 0.0f,           0.0f, 0.0f),            // 8
+    rackOrigin + glm::vec3( 0.5f * spacing, 0.0f, -spacing),        // 9
+    rackOrigin + glm::vec3( 1.5f * spacing, 0.0f, -spacing),        // 10
+    rackOrigin + glm::vec3(-2.0f * spacing, 0.0f, -2.0f * spacing), // 11
+    rackOrigin + glm::vec3(-spacing,        0.0f, -2.0f * spacing), // 12
+    rackOrigin + glm::vec3( 0.0f,           0.0f, -2.0f * spacing), // 13
+    rackOrigin + glm::vec3( spacing,        0.0f, -2.0f * spacing), // 14
+    rackOrigin + glm::vec3( 2.0f * spacing, 0.0f, -2.0f * spacing)  // 15
+};
+constexpr glm::vec3 InitialBallRotation = { -0.75f, 0.0f, 0.0f };
+
+constexpr uint32_t TopViewFramebufferWidth = 540;
+constexpr uint32_t TopViewFramebufferHeight = 360;
+constexpr float TopViewFramebufferAspectRatio = 540.0f / 360.0f;
+
+static void ResetBilliardBalls()
+{
+    for (size_t i = 0; i < s_Data.BilliardBalls.size(); ++i)
+    {
+        s_Data.BilliardBalls[i].Transform.Translation = InitialBallPositions[i];
+        s_Data.BilliardBalls[i].Transform.Rotation = InitialBallRotation;
+        s_Data.BilliardBalls[i].RigidBody.Velocity = glm::vec3(0.0f);
+    }
+}
 
 BallPoolLayer::BallPoolLayer() : Layer("BallPoolLayer") {}
 
@@ -58,53 +92,32 @@ void BallPoolLayer::OnAttach()
     App->GetWindow().SetCursorMode(Roose::WindowCursorMode::Disabled);
 
     // Seed the random number generator
-    srand(time(nullptr));
+    srand(static_cast<uint32_t>(time(nullptr)));
 
     // Load shaders
     s_Data.BlinnPhongShader = Roose::ShaderLibrary::Load("assets/shaders/BlinnPhong.glsl");
     s_Data.UnlitShader = Roose::ShaderLibrary::Load("assets/shaders/Unlit.glsl");
+
+    // Load table
+    s_Data.TableGameObject = Roose::CreateScope<RenderableGameObject>("assets/models/Table.obj");
 
     // Load the billiard balls.
     // Since all billiard balls share the same mesh, we'll load one mesh and reuse it for all balls.
     // This will also reuse the same VAO, VBO, and IBO.
     // We'll load the materials separately and assign them to the corresponding ball.
     s_Data.BilliardBalls.emplace_back("assets/models/Ball0.obj");
-
-    constexpr float spacing = 2.05f;
-    constexpr glm::vec3 rackOrigin   = { 0.0f, 0.0f, 0.0f };
-    constexpr glm::vec3 ballRotation = { -0.75f, 0.0f, 0.0f };
-
-    std::vector<glm::vec3> ballPositions = {
-        rackOrigin + glm::vec3( 0.0f,           0.0f, 40.0f),  // Cue ball
-        rackOrigin + glm::vec3( 0.0f,           0.0f, 2.0f * spacing),  // 1
-        rackOrigin + glm::vec3(-spacing / 2.0f, 0.0f, spacing * 1.0f),  // 2
-        rackOrigin + glm::vec3( spacing / 2.0f, 0.0f, spacing * 1.0f),  // 3
-        rackOrigin + glm::vec3(-spacing,        0.0f, 0.0f),            // 4
-        rackOrigin + glm::vec3( spacing,        0.0f, 0.0f),            // 5
-        rackOrigin + glm::vec3(-1.5f * spacing, 0.0f, -spacing),        // 6
-        rackOrigin + glm::vec3(-0.5f * spacing, 0.0f, -spacing),        // 7
-        rackOrigin + glm::vec3( 0.0f,           0.0f, 0.0f),            // 8
-        rackOrigin + glm::vec3( 0.5f * spacing, 0.0f, -spacing),        // 9
-        rackOrigin + glm::vec3( 1.5f * spacing, 0.0f, -spacing),        // 10
-        rackOrigin + glm::vec3(-2.0f * spacing, 0.0f, -2.0f * spacing), // 11
-        rackOrigin + glm::vec3(-spacing,        0.0f, -2.0f * spacing), // 12
-        rackOrigin + glm::vec3( 0.0f,           0.0f, -2.0f * spacing), // 13
-        rackOrigin + glm::vec3( spacing,        0.0f, -2.0f * spacing), // 14
-        rackOrigin + glm::vec3( 2.0f * spacing, 0.0f, -2.0f * spacing)  // 15
-    };
-
-    s_Data.BilliardBalls[0].Transform.Translation = ballPositions[0];
-    s_Data.BilliardBalls[0].Transform.Rotation = ballRotation;
+    s_Data.BilliardBalls[0].Transform.Translation = InitialBallPositions[0];
+    s_Data.BilliardBalls[0].Transform.Rotation = InitialBallRotation;
     for (uint8_t i = 1; i < 16; ++i)
     {
         s_Data.BilliardBalls.emplace_back(s_Data.BilliardBalls[0]); // Copy the first ball
         s_Data.BilliardBalls[i].SetMaterial(Roose::MaterialLibrary::Load("assets/models/Ball" + std::to_string(i) + ".mtl"));
-        s_Data.BilliardBalls[i].Transform.Translation = ballPositions[i];
-        s_Data.BilliardBalls[i].Transform.Rotation = ballRotation;
+        s_Data.BilliardBalls[i].Transform.Translation = InitialBallPositions[i];
+        s_Data.BilliardBalls[i].Transform.Rotation = InitialBallRotation;
     }
 
     // Set up the top view camera
-    s_Data.TopViewCamera.SetViewportSize(s_TopViewFramebufferWidth, s_TopViewFramebufferHeight);
+    s_Data.TopViewCamera.SetViewportSize(TopViewFramebufferWidth, TopViewFramebufferHeight);
     s_Data.TopViewCamera.SetSize(50.0f);
     glm::mat4 topViewCameraView = glm::lookAt(
         glm::vec3(0.0f, 10.0f, 0.0f), // Camera position
@@ -118,13 +131,16 @@ void BallPoolLayer::OnAttach()
     topViewCameraView = rotationMatrix * topViewCameraView;
     s_Data.TopViewCameraBuffer.ViewProjection = s_Data.TopViewCamera.GetProjection() * topViewCameraView;
     s_Data.TopViewFramebuffer = Roose::Framebuffer::Create({
-        s_TopViewFramebufferWidth, s_TopViewFramebufferHeight,
-        { Roose::FramebufferTextureFormat::RGBA8 }
+        TopViewFramebufferWidth, TopViewFramebufferHeight,
+        { Roose::FramebufferTextureFormat::RGBA8, Roose::FramebufferTextureFormat::Depth }
     });
 
     // Set up initial light source uniforms
     s_Data.DirectionalLight.SetColor({0.94f, 0.434f, 0.79f});
+    s_Data.SpotLight.SetPosition({0.0f, 5.0f, -20.0f});
     s_Data.SpotLight.SetColor({0.75f, 0.0f, 0.0f});
+    s_Data.ConeLight.SetPosition({10.0f, 5.0f, -7.5f});
+    s_Data.ConeLight.SetDirection({-0.5f, -0.75f, -0.75f});
     s_Data.ConeLight.SetColor({0.52f, 0.19f, 0.135f});
     s_Data.AmbientLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_AmbientLight");
     s_Data.DirectionalLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_DirLight");
@@ -164,6 +180,7 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     Roose::Renderer::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
     Roose::Renderer::Clear();
     s_Data.BlinnPhongShader->Bind();
+    s_Data.TableGameObject->Render();
     for (const auto& gameObject : s_Data.BilliardBalls)
     {
         gameObject.Render();
@@ -177,6 +194,7 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     Roose::Renderer::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
     Roose::Renderer::Clear();
     s_Data.UnlitShader->Bind();
+    s_Data.TableGameObject->Render();
     for (const auto& gameObject : s_Data.BilliardBalls)
     {
         gameObject.Render();
@@ -188,7 +206,7 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     const float screenWidth = static_cast<float>(App->GetWindow().GetWidth());
     const float minimapScale = screenWidth / 1600.0f;
     const float minimapWidth  = 320.0f * minimapScale;
-    const float minimapHeight = minimapWidth / s_TopViewFramebufferAspectRatio;
+    const float minimapHeight = minimapWidth / TopViewFramebufferAspectRatio;
     const float padding = 25.0f * minimapScale;
     const float minimapX = minimapWidth / 2.0f + padding;
     const float minimapY = minimapHeight / 2.0f + padding;
@@ -209,7 +227,7 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
             auto& ballA = s_Data.BilliardBalls[i];
             auto& ballB = s_Data.BilliardBalls[j];
 
-            glm::vec3 delta = ballB.Transform.Translation - ballA.Transform.Translation;
+            const glm::vec3 delta = ballB.Transform.Translation - ballA.Transform.Translation;
             float dist2 = glm::dot(delta, delta);
 
             if (dist2 < minDist * minDist)
@@ -218,26 +236,26 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
                 if (dist < 1e-6f) dist = minDist; // Prevent division by zero
 
                 // Position correction (minimum translation distance)
-                float penetration = minDist - dist;
-                glm::vec3 correctionDir = delta / dist;
-                glm::vec3 correction = correctionDir * (penetration * 0.5f);
+                const float penetration = minDist - dist;
+                const glm::vec3 correctionDir = delta / dist;
+                const glm::vec3 correction = correctionDir * (penetration * 0.5f);
 
                 ballA.Transform.Translation -= correction;
                 ballB.Transform.Translation += correction;
 
                 // Velocity response (elastic collision)
-                glm::vec3 vA = ballA.RigidBody.Velocity;
-                glm::vec3 vB = ballB.RigidBody.Velocity;
-                float mA = ballA.RigidBody.Mass;
-                float mB = ballB.RigidBody.Mass;
-                float restitution = glm::min(ballA.RigidBody.Restitution, ballB.RigidBody.Restitution);
+                const glm::vec3 vA = ballA.RigidBody.Velocity;
+                const glm::vec3 vB = ballB.RigidBody.Velocity;
+                const float mA = ballA.RigidBody.Mass;
+                const float mB = ballB.RigidBody.Mass;
+                const float restitution = glm::min(ballA.RigidBody.Restitution, ballB.RigidBody.Restitution);
 
-                glm::vec3 normal = correctionDir;
-                float vRel = glm::dot(vB - vA, normal);
+                const glm::vec3 normal = correctionDir;
+                const float vRel = glm::dot(vB - vA, normal);
 
                 if (vRel < 0.0f) // Only resolve if balls are moving towards each other
                 {
-                    float impulseMag = -(1.0f + restitution) * vRel / (1.0f / mA + 1.0f / mB);
+                    const float impulseMag = -(1.0f + restitution) * vRel / (1.0f / mA + 1.0f / mB);
                     glm::vec3 impulse = impulseMag * normal;
 
                     ballA.RigidBody.Velocity -= impulse / mA;
@@ -248,10 +266,10 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
     }
 
     // Table boundaries
-    constexpr float tableMinX = -22.0f;
-    constexpr float tableMaxX =  22.0f;
-    constexpr float tableMinZ = -44.0f;
-    constexpr float tableMaxZ =  44.0f;
+    constexpr float tableMinX = -19.6181f;
+    constexpr float tableMaxX =  19.6181f;
+    constexpr float tableMinZ = -29.4118f;
+    constexpr float tableMaxZ =  29.4118f;
 
     // Ball-table boundary collision
     for (auto& gameObject : s_Data.BilliardBalls)
@@ -330,7 +348,10 @@ bool BallPoolLayer::OnKeyDown(const Roose::KeyDownEvent& e)
             break;
         case Roose::Key::Space:
             // Apply force to the cue ball
-            s_Data.BilliardBalls[0].ApplyForce({ 0.0f, 0.0f, -500.0f });
+            s_Data.BilliardBalls[0].ApplyForce({ 0.0f, 0.0f, -750.0f });
+            break;
+        case Roose::Key::R:
+            ResetBilliardBalls();
             break;
         case Roose::Key::D1: case Roose::Key::KP1:
             handleLight(s_Data.AmbientLight);

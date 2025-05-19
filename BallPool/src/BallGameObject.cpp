@@ -2,12 +2,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-BallGameObject::BallGameObject(const std::string& objModelFilePath)
+BallGameObject::BallGameObject(const std::string& objModelFilePath) : RenderableGameObject(objModelFilePath)
 {
-    m_RenderableObject = Roose::CreateRef<Roose::RenderableObject>();
-    m_RenderableObject->Load(objModelFilePath);
-    m_RenderableObject->Install();
-    m_Material = m_RenderableObject->GetMeshesEntries()[0].Material;
     RigidBody.Mass = 0.165f; // Approximate mass of a billiard ball
     RigidBody.Restitution = 0.95f;
 }
@@ -44,10 +40,4 @@ void BallGameObject::FixedUpdate(const Roose::Timestep fixedDeltaTime)
         // Convert back to Euler angles (radians)
         Transform.Rotation = glm::eulerAngles(newQuat);
     }
-}
-
-void BallGameObject::Render() const
-{
-    m_RenderableObject->SetMaterial(m_Material);
-    m_RenderableObject->Render(Transform.Translation, Transform.Rotation);
 }

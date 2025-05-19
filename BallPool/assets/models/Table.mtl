@@ -1,0 +1,12 @@
+# Blender 4.3.2 MTL File: 'Table.blend'
+# www.blender.org
+
+newmtl RedCarpet
+Ns 2.5
+Ka 0.100000 0.100000 0.100000
+Ks 0.120000 0.120000 0.120000
+Kd 1.000000 1.000000 1.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Table.png
