@@ -77,6 +77,13 @@ struct DirectionalLight {
     vec3 direction;    // Light direction (world space)
 };
 
+struct PointLight {
+    bool enabled;
+    vec3 color;        // Light color
+    vec3 position;     // Light position (world space)
+    float range;       // Light range
+};
+
 struct SpotLight {
     bool enabled;
     vec3 color;        // Light color
@@ -86,18 +93,10 @@ struct SpotLight {
     float outerCutoff; // Outer cutoff angle (cosine)
 };
 
-struct ConeLight {
-    bool enabled;
-    vec3 color;        // Light color
-    vec3 position;     // Light position (world space)
-    vec3 direction;    // Light direction (world space)
-    float angle;       // Cone cutoff angle (cosine)
-};
-
 uniform AmbientLight u_AmbientLight;
 uniform DirectionalLight u_DirLight;
+uniform PointLight u_PointLight;
 uniform SpotLight u_SpotLight;
-uniform ConeLight u_ConeLight;
 
 // --- Light Calculation Functions ---
 vec3 CalcAmbientLight(AmbientLight light, vec3 ambientMat) {
@@ -114,31 +113,32 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 diffuseMa
     return light.color * (diffuseMat * diff + specularMat * spec);
 }
 
+vec3 CalcPointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuseMat, vec3 specularMat, float shininess) {
+    if (!light.enabled) return vec3(0.0);
+    vec3 lightVec = light.position - fragPos;
+    vec3 L = normalize(lightVec);
+    float distance = length(lightVec);
+    float attenuation = clamp(1.0 - distance / light.range, 0.0, 1.0);
+    attenuation *= attenuation; // Quadratic attenuation
+    vec3 H = normalize(L + V);
+    float diff = max(dot(N, L), 0.0);
+    float spec = 0.0;
+    if (diff > 0.0) {
+        spec = pow(max(dot(N, H), 0.0), shininess);
+    }
+    return attenuation * light.color * (diffuseMat * diff + specularMat * spec);
+}
+
 vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuseMat, vec3 specularMat, float shininess) {
     if (!light.enabled) return vec3(0.0);
     vec3 L = normalize(light.position - fragPos);
     float theta = dot(L, normalize(-light.direction));
     float epsilon = light.cutoff - light.outerCutoff;
     float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
-
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
     float spec = pow(max(dot(N, H), 0.0), shininess);
-
     return intensity * light.color * (diffuseMat * diff + specularMat * spec);
-}
-
-vec3 CalcConeLight(ConeLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuseMat, vec3 specularMat, float shininess) {
-    if (!light.enabled) return vec3(0.0);
-    vec3 L = normalize(light.position - fragPos);
-    float theta = dot(L, normalize(-light.direction));
-    if (theta > light.angle) {
-        vec3 H = normalize(L + V);
-        float diff = max(dot(N, L), 0.0);
-        float spec = pow(max(dot(N, H), 0.0), shininess);
-        return light.color * (diffuseMat * diff + specularMat * spec);
-    }
-    return vec3(0.0);
 }
 
 void main()
@@ -154,8 +154,8 @@ void main()
 
     result += CalcAmbientLight(u_AmbientLight, ambientMat);
     result += CalcDirectionalLight(u_DirLight, N, V, diffuseMat, specularMat, u_Shininess);
+    result += CalcPointLight(u_PointLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
     result += CalcSpotLight(u_SpotLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
-    result += CalcConeLight(u_ConeLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
 
     vec4 textureColor = texture(u_Texture, v_Input.TexCoord); // Sample the texture
     o_Color = vec4(result, 1.0) * textureColor; // Combine lighting with texture color

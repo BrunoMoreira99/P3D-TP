@@ -1,8 +1,8 @@
 #include "BallPoolLayer.h"
 #include "Lighting/AmbientLight.h"
 #include "Lighting/DirectionalLight.h"
+#include "Lighting/PointLight.h"
 #include "Lighting/SpotLight.h"
-#include "Lighting/ConeLight.h"
 #include "BallGameObject.h"
 
 #include <Roose/Core/Application.h>
@@ -37,8 +37,8 @@ struct BallPoolData
     // Light Sources
     AmbientLight AmbientLight;
     DirectionalLight DirectionalLight;
+    PointLight PointLight;
     SpotLight SpotLight;
-    ConeLight ConeLight;
 
     Roose::Scope<RenderableGameObject> TableGameObject;
     std::vector<BallGameObject> BilliardBalls;
@@ -137,15 +137,14 @@ void BallPoolLayer::OnAttach()
 
     // Set up initial light source uniforms
     s_Data.DirectionalLight.SetColor({0.94f, 0.434f, 0.79f});
+    s_Data.PointLight.SetPosition({10.0f, 5.0f, -7.5f});
+    s_Data.PointLight.SetColor({0.52f, 0.19f, 0.135f});
     s_Data.SpotLight.SetPosition({0.0f, 5.0f, -20.0f});
     s_Data.SpotLight.SetColor({0.75f, 0.0f, 0.0f});
-    s_Data.ConeLight.SetPosition({10.0f, 5.0f, -7.5f});
-    s_Data.ConeLight.SetDirection({-0.5f, -0.75f, -0.75f});
-    s_Data.ConeLight.SetColor({0.52f, 0.19f, 0.135f});
     s_Data.AmbientLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_AmbientLight");
     s_Data.DirectionalLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_DirLight");
+    s_Data.PointLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_PointLight");
     s_Data.SpotLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_SpotLight");
-    s_Data.ConeLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_ConeLight");
 }
 
 void BallPoolLayer::OnDetach() {}
@@ -173,8 +172,8 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     // Update light sources
     s_Data.AmbientLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_AmbientLight");
     s_Data.DirectionalLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_DirLight");
+    s_Data.PointLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_PointLight");
     s_Data.SpotLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_SpotLight");
-    s_Data.ConeLight.ApplyUniforms(s_Data.BlinnPhongShader, "u_ConeLight");
 
     // Render
     Roose::Renderer::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
@@ -360,10 +359,10 @@ bool BallPoolLayer::OnKeyDown(const Roose::KeyDownEvent& e)
             handleLight(s_Data.DirectionalLight);
             break;
         case Roose::Key::D3: case Roose::Key::KP3:
-            handleLight(s_Data.SpotLight);
+            handleLight(s_Data.PointLight);
             break;
         case Roose::Key::D4: case Roose::Key::KP4:
-            handleLight(s_Data.ConeLight);
+            handleLight(s_Data.SpotLight);
             break;
     }
 
