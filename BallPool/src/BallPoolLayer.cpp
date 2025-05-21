@@ -206,7 +206,7 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     const float minimapWidth  = 320.0f * minimapScale;
     const float minimapHeight = minimapWidth / TopViewFramebufferAspectRatio;
     const float padding = 25.0f * minimapScale;
-    const float minimapX = minimapWidth / 2.0f + padding;
+    const float minimapX = screenWidth - minimapWidth / 2.0f - padding;
     const float minimapY = minimapHeight / 2.0f + padding;
     Roose::Renderer::DrawQuad(minimapX, minimapY, minimapWidth, minimapHeight);
 }
