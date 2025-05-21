@@ -32,7 +32,6 @@ struct BallPoolData
 
     Roose::Ref<Roose::Shader> BlinnPhongShader;
     Roose::Ref<Roose::Shader> UnlitShader;
-    Roose::Ref<Roose::Shader> FullscreenUnlit2DShader;
 
     // Light Sources
     AmbientLight AmbientLight;
