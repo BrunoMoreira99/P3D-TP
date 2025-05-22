@@ -84,7 +84,7 @@ namespace Roose {
         const Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, 6);
         s_Data.VertexArray->SetIndexBuffer(indexBuffer);
 
-        s_Data.ScreenSpaceUnlit2DShader = Shader::FromGLSLString("FullscreenUnlit2D", ScreenSpaceUnlit2DShaderSource);
+        s_Data.ScreenSpaceUnlit2DShader = Shader::FromGLSLString("ScreenSpaceUnlit2D", ScreenSpaceUnlit2DShaderSource);
     }
 
     void Renderer::Shutdown()
