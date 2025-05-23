@@ -3,9 +3,9 @@
 #include "Lighting/DirectionalLight.h"
 #include "Lighting/PointLight.h"
 #include "Lighting/SpotLight.h"
-#include "GameObject.h"
-#include "BallGameObject.h"
-#include "LightSourceGameObject.h"
+#include "GameObjects/GameObject.h"
+#include "GameObjects/BallGameObject.h"
+#include "GameObjects/LightSourceGameObject.h"
 
 #include <Roose/Core/Application.h>
 #include <Roose/Renderer/Renderer.h>

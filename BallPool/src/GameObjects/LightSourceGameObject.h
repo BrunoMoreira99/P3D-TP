@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameObject.h"
-#include "Lighting/BaseLight.h"
+#include "../Lighting/BaseLight.h"
 
 class LightSourceGameObject : public GameObject
 {

@@ -110,7 +110,7 @@ namespace Roose {
          * @param size The size in bytes of the buffer object's data store.
          * @return A reference to the created VertexBuffer.
          */
-        [[nodiscard]]static Ref<VertexBuffer> Create(const void* vertices, uint32_t size);
+        [[nodiscard]] static Ref<VertexBuffer> Create(const void* vertices, uint32_t size);
     private:
         uint32_t m_RendererID;
         uint32_t m_Size;
