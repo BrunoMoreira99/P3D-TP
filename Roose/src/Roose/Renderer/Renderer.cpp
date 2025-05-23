@@ -118,6 +118,16 @@ namespace Roose {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
+    void Renderer::ClearColor()
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void Renderer::ClearDepth()
+    {
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+
     void Renderer::DrawIndexed(const Ref<VertexArray>& vertexArray, const uint32_t indexCount)
     {
         vertexArray->Bind();
