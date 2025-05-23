@@ -20,6 +20,9 @@ public:
 
     void OnEvent(Roose::Event& e) override;
     bool OnKeyDown(const Roose::KeyDownEvent& e);
+    bool OnMouseMove(const Roose::MouseMoveEvent& e);
+private:
+    void UpdateSceneRotation(const glm::vec2& mousePosition);
 private:
     CameraController m_CameraController;
 };

@@ -31,6 +31,9 @@ public:
         }
     }
 
+    virtual void SetPosition(const glm::vec3& position) {}
+    virtual void SetDirection(const glm::vec3& direction) {}
+
     [[nodiscard]] bool IsDirty() const { return m_IsDirty; }
 
     virtual void ApplyUniforms(const Roose::Ref<Roose::Shader>& shader, const std::string& uniformPrefix) = 0;

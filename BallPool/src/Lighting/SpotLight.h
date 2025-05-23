@@ -10,16 +10,18 @@ public:
         const glm::vec3& direction = {0.0f, -1.0f, 0.0f},
         const float cutoff = glm::cos(glm::radians(12.5f)),
         const float outerCutoff = glm::cos(glm::radians(17.5f))
-    ) : BaseLight(enabled, color), m_Position(position), m_Direction(direction), m_Cutoff(cutoff), m_OuterCutoff(outerCutoff) {}
+    ) : BaseLight(enabled, color), m_Position(position), m_Direction(direction), m_Cutoff(cutoff), m_OuterCutoff(outerCutoff)
+    { }
 
-    void SetPosition(const glm::vec3& position) {
+    void SetPosition(const glm::vec3& position) override
+    {
         if (m_Position != position) {
             m_Position = position;
             m_IsDirty = true;
         }
     }
 
-    void SetDirection(const glm::vec3& direction) {
+    void SetDirection(const glm::vec3& direction) override {
         if (m_Direction != direction) {
             m_Direction = direction;
             m_IsDirty = true;
@@ -51,7 +53,6 @@ public:
             m_IsDirty = false;
         }
     }
-
 private:
     glm::vec3 m_Position;
     glm::vec3 m_Direction;

@@ -10,7 +10,8 @@ public:
         const float range = 20.0f
     ) : BaseLight(enabled, color), m_Position(position), m_Range(range) {}
 
-    void SetPosition(const glm::vec3& position) {
+    void SetPosition(const glm::vec3& position) override
+    {
         if (m_Position != position) {
             m_Position = position;
             m_IsDirty = true;
@@ -33,7 +34,6 @@ public:
             m_IsDirty = false;
         }
     }
-
 private:
     glm::vec3 m_Position;
     float m_Range;

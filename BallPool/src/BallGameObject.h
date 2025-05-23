@@ -8,15 +8,17 @@
 class BallGameObject : public RenderableGameObject
 {
 public:
-    BallGameObject(const std::string& objModelFilePath);
+    BallGameObject(uint8_t number, const std::string& objModelFilePath);
 
-    void Update(Roose::Timestep deltaTime) override;
     void FixedUpdate(Roose::Timestep fixedDeltaTime) override;
+    void Reset() override;
 
+    void SetBallNumber(uint8_t number);
     void ApplyForce(const glm::vec3& force) { RigidBody.ApplyForce(force); }
     [[nodiscard]] float GetRadius() const { return m_Radius; }
 
     RigidBodyComponent RigidBody;
 private:
+    uint8_t m_BallNumber;
     float m_Radius = 1.0f; // (Approximation) This is used as the radius of the sphere collider
 };

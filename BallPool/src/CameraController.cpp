@@ -8,8 +8,6 @@
 CameraController::CameraController() : m_Window(Roose::Application::Get().GetWindow())
 {
     m_Camera.SetViewportSize(m_Window.GetWidth(), m_Window.GetHeight());
-    m_PrevMousePos = Roose::Input::GetMousePosition();
-    UpdateCameraPosition(m_PrevMousePos);
 }
 
 void CameraController::OnUpdate(const float deltaTime)
@@ -29,34 +27,8 @@ void CameraController::OnUpdate(const float deltaTime)
 void CameraController::OnEvent(Roose::Event& e)
 {
     Roose::EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<Roose::MouseMoveEvent>(RS_BIND_EVENT_FN(CameraController::OnMouseMove));
     dispatcher.Dispatch<Roose::MouseScrollEvent>(RS_BIND_EVENT_FN(CameraController::OnMouseScroll));
     dispatcher.Dispatch<Roose::WindowResizeEvent>(RS_BIND_EVENT_FN(CameraController::OnWindowResized));
-}
-
-void CameraController::UpdateCameraPosition(const glm::vec2& mousePosition)
-{
-    // Calculate the mouse delta
-    const glm::vec2 delta = mousePosition - m_PrevMousePos;
-    m_PrevMousePos = mousePosition;
-
-    m_Yaw   -= delta.x * m_LookSensitivity;
-    m_Pitch -= delta.y * m_LookSensitivity;
-    m_Pitch = glm::clamp(m_Pitch, glm::radians(15.0f), glm::radians(60.0f));
-
-    // Calculate the new camera position
-    const float x = m_OrbitRadius * cos(m_Pitch) * cos(m_Yaw);
-    const float y = m_OrbitRadius * sin(m_Pitch);
-    const float z = m_OrbitRadius * cos(m_Pitch) * sin(m_Yaw);
-    m_Translation = { x, y, z };
-}
-
-bool CameraController::OnMouseMove(const Roose::MouseMoveEvent& e)
-{
-    if (m_CameraControlEnabled)
-        UpdateCameraPosition({ e.GetX(), e.GetY() });
-
-    return false;
 }
 
 bool CameraController::OnMouseScroll(const Roose::MouseScrollEvent& e)

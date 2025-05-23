@@ -9,7 +9,7 @@ public:
         const glm::vec3& direction = {-0.5f, -1.0f, -0.5f}
     ) : BaseLight(enabled, color), m_Direction(direction) {}
 
-    void SetDirection(const glm::vec3& direction) {
+    void SetDirection(const glm::vec3& direction) override {
         if (m_Direction != direction) {
             m_Direction = direction;
             m_IsDirty = true;
@@ -24,7 +24,6 @@ public:
             m_IsDirty = false;
         }
     }
-
 private:
     glm::vec3 m_Direction;
 };

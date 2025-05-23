@@ -23,25 +23,16 @@ public:
 
     [[nodiscard ]]glm::mat4 GetViewProjection() const;
 private:
-    bool OnMouseMove(const Roose::MouseMoveEvent& e);
     bool OnMouseScroll(const Roose::MouseScrollEvent& e);
     bool OnWindowResized(const Roose::WindowResizeEvent& e);
-    void UpdateCameraPosition(const glm::vec2& mousePosition);
 private:
     Roose::PerspectiveCamera m_Camera;
     Roose::Window& m_Window;
 
-    glm::vec3 m_Translation = { 0.0f, 0.0f, 0.0f };
-
-    float m_Yaw = 20.0f;
-    float m_Pitch = 0.5f;
-    float m_OrbitRadius = 50.0f;
+    glm::vec3 m_Translation = { 0.0f, 25.0f, 70.0f };
 
     bool m_CameraControlEnabled = false;
-    glm::vec2 m_PrevMousePos = { 0.0f, 0.0f };
-
     float m_TargetFOV = glm::radians(45.0f);
     float m_ZoomSmoothFactor = 10.0f;
     float m_ZoomSpeed = glm::radians(2.5f);
-    float m_LookSensitivity = 0.0025f;
 };

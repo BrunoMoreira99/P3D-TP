@@ -10,6 +10,7 @@ RenderableGameObject::RenderableGameObject(const std::string& objModelFilePath)
 
 void RenderableGameObject::Render() const
 {
+    const TransformComponent transform = GetWorldTransform();
     m_RenderableObject->SetMaterial(m_Material);
-    m_RenderableObject->Render(Transform.Translation, Transform.Rotation);
+    m_RenderableObject->Render(transform.Translation, glm::eulerAngles(transform.Rotation));
 }
