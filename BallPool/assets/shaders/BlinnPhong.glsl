@@ -109,10 +109,7 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 diffuseMa
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
-    float spec = 0.0;
-    if (diff > 0.0) {
-        spec = pow(max(dot(N, H), 0.0), shininess);
-    }
+    float spec = (diff > 0.0) ? pow(max(dot(N, H), 0.0), shininess) : 0.0;
     return light.color * (diffuseMat * diff + specularMat * spec);
 }
 
@@ -125,10 +122,7 @@ vec3 CalcPointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuse
     float attenuation = 1.0 / (1.0 + quadratic * distance * distance);
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
-    float spec = 0.0;
-    if (diff > 0.0) {
-        spec = pow(max(dot(N, H), 0.0), shininess);
-    }
+    float spec = (diff > 0.0) ? pow(max(dot(N, H), 0.0), shininess) : 0.0;
     return attenuation * light.color * (diffuseMat * diff + specularMat * spec);
 }
 
@@ -140,10 +134,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuseMa
     float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
-    float spec = 0.0;
-    if (diff > 0.0) {
-        spec = pow(max(dot(N, H), 0.0), shininess);
-    }
+    float spec = (diff > 0.0) ? pow(max(dot(N, H), 0.0), shininess) : 0.0;
     return intensity * light.color * (diffuseMat * diff + specularMat * spec);
 }
 
