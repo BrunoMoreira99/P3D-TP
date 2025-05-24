@@ -82,7 +82,7 @@ namespace Roose {
 
         if (!mtl.TexturePath.empty())
         {
-            SetTexture("u_Texture", Texture2D::Create(mtl.TexturePath));
+            SetTexture("u_DiffuseTexture", Texture2D::Create(mtl.TexturePath));
         }
     }
     #pragma endregion

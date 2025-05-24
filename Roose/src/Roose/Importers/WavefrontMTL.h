@@ -6,11 +6,11 @@ namespace Roose {
 
     struct WavefrontMTLMaterial
     {
-        glm::vec3 Ka = {};   // Ambient reflectance
-        glm::vec3 Kd = {};   // Diffuse reflectance
-        glm::vec3 Ks = {};   // Specular reflectance
-        float Ns = 1.0f;     // Shininess (specular exponent)
-        std::string TexturePath; // Texture file path
+        glm::vec3 Ka = {};       // Ambient reflectance
+        glm::vec3 Kd = {};       // Diffuse reflectance
+        glm::vec3 Ks = {};       // Specular reflectance
+        float Ns = 1.0f;         // Shininess (specular exponent)
+        std::string TexturePath; // Diffuse Texture file path
     };
 
     /**

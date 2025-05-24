@@ -49,7 +49,7 @@ struct VertexOutput
 
 layout(location = 0) in VertexOutput v_Input;
 
-layout(binding = 0) uniform sampler2D u_Texture;
+layout(binding = 0) uniform sampler2D u_DiffuseTexture;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -140,19 +140,19 @@ vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuseMa
 
 void main()
 {
-    vec3 N = normalize(v_Input.Normal);                             // Normal vector
-    vec3 V = normalize(vec3(u_Camera.Position) - v_Input.Position); // View vector
-    vec4 textureColor = texture(u_Texture, v_Input.TexCoord);       // Sample the texture
+    vec3 N = normalize(v_Input.Normal);                                 // Normal vector
+    vec3 V = normalize(vec3(u_Camera.Position) - v_Input.Position);     // View vector
+    vec4 diffuseTexColor = texture(u_DiffuseTexture, v_Input.TexCoord); // Sample the texture
     vec3 result = vec3(0.0);
 
     vec3 ambientMat = u_Ambient.rgb;
-    vec3 diffuseMat = u_Diffuse.rgb * textureColor.rgb;   // Modulate diffuse by texture
-    vec3 specularMat = u_Specular.rgb * textureColor.rgb; // Modulate specular by texture
+    vec3 diffuseMat = u_Diffuse.rgb * diffuseTexColor.rgb; // Modulate diffuse (Kd) by diffuse texture color (map_Kd)
+    vec3 specularMat = u_Specular.rgb;
 
     result += CalcAmbientLight(u_AmbientLight, ambientMat);
     result += CalcDirectionalLight(u_DirLight, N, V, diffuseMat, specularMat, u_Shininess);
     result += CalcPointLight(u_PointLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
     result += CalcSpotLight(u_SpotLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
 
-    o_Color = vec4(result, textureColor.a); // Use texture alpha
+    o_Color = vec4(result, diffuseTexColor.a); // Use texture alpha
 }
