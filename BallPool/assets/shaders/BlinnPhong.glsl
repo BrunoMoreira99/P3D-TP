@@ -109,7 +109,10 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 N, vec3 V, vec3 diffuseMa
     vec3 L = normalize(-light.direction);
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
-    float spec = pow(max(dot(N, H), 0.0), shininess);
+    float spec = 0.0;
+    if (diff > 0.0) {
+        spec = pow(max(dot(N, H), 0.0), shininess);
+    }
     return light.color * (diffuseMat * diff + specularMat * spec);
 }
 
@@ -118,8 +121,8 @@ vec3 CalcPointLight(PointLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuse
     vec3 lightVec = light.position - fragPos;
     vec3 L = normalize(lightVec);
     float distance = length(lightVec);
-    float attenuation = clamp(1.0 - distance / light.range, 0.0, 1.0);
-    attenuation *= attenuation; // Quadratic attenuation
+    float quadratic = 1.0 / (light.range * light.range);
+    float attenuation = 1.0 / (1.0 + quadratic * distance * distance);
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
     float spec = 0.0;
@@ -137,7 +140,10 @@ vec3 CalcSpotLight(SpotLight light, vec3 fragPos, vec3 N, vec3 V, vec3 diffuseMa
     float intensity = clamp((theta - light.outerCutoff) / epsilon, 0.0, 1.0);
     vec3 H = normalize(L + V);
     float diff = max(dot(N, L), 0.0);
-    float spec = pow(max(dot(N, H), 0.0), shininess);
+    float spec = 0.0;
+    if (diff > 0.0) {
+        spec = pow(max(dot(N, H), 0.0), shininess);
+    }
     return intensity * light.color * (diffuseMat * diff + specularMat * spec);
 }
 
@@ -145,18 +151,17 @@ void main()
 {
     vec3 N = normalize(v_Input.Normal);                             // Normal vector
     vec3 V = normalize(vec3(u_Camera.Position) - v_Input.Position); // View vector
+    vec4 textureColor = texture(u_Texture, v_Input.TexCoord);       // Sample the texture
     vec3 result = vec3(0.0);
 
-    // Convert vec4 material properties to vec3
     vec3 ambientMat = u_Ambient.rgb;
-    vec3 diffuseMat = u_Diffuse.rgb;
-    vec3 specularMat = u_Specular.rgb;
+    vec3 diffuseMat = u_Diffuse.rgb * textureColor.rgb;   // Modulate diffuse by texture
+    vec3 specularMat = u_Specular.rgb * textureColor.rgb; // Modulate specular by texture
 
     result += CalcAmbientLight(u_AmbientLight, ambientMat);
     result += CalcDirectionalLight(u_DirLight, N, V, diffuseMat, specularMat, u_Shininess);
     result += CalcPointLight(u_PointLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
     result += CalcSpotLight(u_SpotLight, v_Input.Position, N, V, diffuseMat, specularMat, u_Shininess);
 
-    vec4 textureColor = texture(u_Texture, v_Input.TexCoord); // Sample the texture
-    o_Color = vec4(result, 1.0) * textureColor; // Combine lighting with texture color
+    o_Color = vec4(result, textureColor.a); // Use texture alpha
 }

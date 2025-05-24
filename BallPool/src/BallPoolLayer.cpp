@@ -165,7 +165,7 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     s_Data.SpotLight->ApplyUniforms(s_Data.BlinnPhongShader, "u_SpotLight");
 
     // Render
-    Roose::Renderer::SetClearColor({ 0.1f, 0.1f, 0.1f, 1.0f });
+    Roose::Renderer::SetClearColor({ 0.0f, 0.0f, 0.0f, 1.0f });
     Roose::Renderer::Clear();
     s_Data.BlinnPhongShader->Bind();
     s_Data.SceneObject->Render();
