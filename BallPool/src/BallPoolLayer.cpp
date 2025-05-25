@@ -210,16 +210,20 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
             auto& ballB = s_Data.BilliardBalls[j];
 
             const glm::vec3 delta = ballB->Transform.Translation - ballA->Transform.Translation;
-            float dist2 = glm::dot(delta, delta);
+            const float distSquared = glm::dot(delta, delta);
 
-            if (dist2 < minDist * minDist)
+            if (distSquared < minDist * minDist)
             {
-                float dist = glm::sqrt(dist2);
-                if (dist < 1e-6f) dist = minDist; // Prevent division by zero
+                const float dist = glm::sqrt(distSquared);
+
+                glm::vec3 correctionDir;
+                if (dist < 1e-6f) // Balls are almost at the same position, we'll use a random direction to avoid division by zero
+                    correctionDir = glm::normalize(glm::vec3(glm::linearRand(-1.0f, 1.0f), 0.0f, glm::linearRand(-1.0f, 1.0f)));
+                else
+                    correctionDir = delta / dist;
 
                 // Position correction (minimum translation distance)
                 const float penetration = minDist - dist;
-                const glm::vec3 correctionDir = delta / dist;
                 const glm::vec3 correction = correctionDir * (penetration * 0.5f);
 
                 ballA->Transform.Translation -= correction;
@@ -232,13 +236,12 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
                 const float mB = ballB->RigidBody.Mass;
                 const float restitution = glm::min(ballA->RigidBody.Restitution, ballB->RigidBody.Restitution);
 
-                const glm::vec3 normal = correctionDir;
-                const float vRel = glm::dot(vB - vA, normal);
+                const float vRel = glm::dot(vB - vA, correctionDir);
 
                 if (vRel < 0.0f) // Only resolve if balls are moving towards each other
                 {
                     const float impulseMag = -(1.0f + restitution) * vRel / (1.0f / mA + 1.0f / mB);
-                    glm::vec3 impulse = impulseMag * normal;
+                    glm::vec3 impulse = impulseMag * correctionDir;
 
                     ballA->RigidBody.Velocity -= impulse / mA;
                     ballB->RigidBody.Velocity += impulse / mB;
