@@ -40,7 +40,7 @@ namespace Roose {
          * @brief Get all the mesh entries of this object.
          * @return A vector of mesh entries.
          */
-        [[nodiscard]] const std::vector<Model::MeshEntry>& GetMeshesEntries() const { return m_MeshesEntries; }
+        [[nodiscard]] const std::vector<Model::MeshEntry>& GetMeshEntries() const { return m_MeshesEntries; }
 
         /**
          * @brief Sets the material for all meshes in this object.

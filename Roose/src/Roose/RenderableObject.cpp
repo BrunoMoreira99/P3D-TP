@@ -10,9 +10,9 @@ namespace Roose {
 
     void RenderableObject::Load(std::string obj_model_filepath)
     {
-        const Ref<Model> model = Model::Create(obj_model_filepath);
-        if (!model) return;
-        m_MeshesEntries = std::vector(model->GetMeshes());
+        if (const Ref<Model> model = Model::Create(obj_model_filepath))
+            // Model will be destroyed after this call, so we can safely move the meshes instead of copying them.
+            m_MeshesEntries = std::move(model->GetMeshes());
     }
 
     void RenderableObject::Install()
