@@ -17,8 +17,6 @@
 #include <glm/gtc/random.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-static Roose::Application* App = nullptr;
-
 struct BallPoolData
 {
     struct CameraData
@@ -61,8 +59,7 @@ BallPoolLayer::BallPoolLayer() : Layer("BallPoolLayer") {}
 
 void BallPoolLayer::OnAttach()
 {
-    App = &Roose::Application::Get();
-    App->GetWindow().SetCursorMode(Roose::WindowCursorMode::Disabled);
+    Roose::Application::Get().GetWindow().SetCursorMode(Roose::WindowCursorMode::Disabled);
 
     // Seed the random number generator
     srand(static_cast<uint32_t>(time(nullptr)));
@@ -145,7 +142,7 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     s_Data.fpsTimer += deltaTime;
     if (s_Data.fpsTimer > 0.25f)
     {
-        App->GetWindow().SetTitle("Ball Pool | FPS: " + std::to_string(static_cast<int32_t>(1.0f / deltaTime)));
+        Roose::Application::Get().GetWindow().SetTitle("Ball Pool | FPS: " + std::to_string(static_cast<int32_t>(1.0f / deltaTime)));
         s_Data.fpsTimer = 0.0f;
     }
 
@@ -171,34 +168,64 @@ void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
     s_Data.SceneObject->Render();
 
     // Draw minimap
+    DrawMinimap();
+}
+
+void BallPoolLayer::DrawMinimap()
+{
+    // Save the current scene rotation
     const glm::quat savedSceneRotation = s_Data.SceneObject->Transform.Rotation;
-    s_Data.SceneObject->Transform.Rotation = { 1.0f, 0.0f, 0.0f, 0.0f }; // Reset rotation for top view
+    // Reset the scene rotation for the top-down minimap view
+    s_Data.SceneObject->Transform.Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
+
+    // Clear the depth buffer from the default framebuffer to avoid depth issues with the minimap
     Roose::Renderer::ClearDepth();
+
+    // Update the top view camera uniform buffer
     Roose::Renderer::GetCameraUniformBuffer()->SetData(&s_Data.TopViewCameraBuffer, sizeof(BallPoolData::CameraData));
+
+    // Bind the top view framebuffer and clear it
     s_Data.TopViewFramebuffer->Bind();
     Roose::Renderer::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
     Roose::Renderer::Clear();
+
+    // Render the scene from the top view using the unlit shader
     s_Data.UnlitShader->Bind();
     s_Data.SceneObject->Render();
+
+    // Unbind the framebuffer
     s_Data.TopViewFramebuffer->Unbind();
-    s_Data.SceneObject->Transform.Rotation = savedSceneRotation; // Restore rotation
-    Roose::Renderer::SetViewport(0, 0, App->GetWindow().GetWidth(), App->GetWindow().GetHeight());
+
+    // Restore the original scene rotation
+    s_Data.SceneObject->Transform.Rotation = savedSceneRotation;
+
+    // Restore the viewport to the full window size
+    const Roose::Window& window = Roose::Application::Get().GetWindow();
+    const uint32_t windowWidth  = window.GetWidth();
+    const uint32_t windowHeight = window.GetHeight();
+    Roose::Renderer::SetViewport(0, 0, windowWidth, windowHeight);
+
+    // Bind the minimap texture
     const uint32_t textureID = s_Data.TopViewFramebuffer->GetColorAttachmentRendererID();
     glBindTextureUnit(0, textureID);
-    const float screenWidth = static_cast<float>(App->GetWindow().GetWidth());
+
+    // Calculate minimap size and position
+    const float screenWidth = static_cast<float>(windowWidth);
     const float minimapScale = screenWidth / 1600.0f;
     const float minimapWidth  = 320.0f * minimapScale;
     const float minimapHeight = minimapWidth / TopViewFramebufferAspectRatio;
     const float padding = 25.0f * minimapScale;
     const float minimapX = screenWidth - minimapWidth / 2.0f - padding;
     const float minimapY = minimapHeight / 2.0f + padding;
+
+    // Draw the minimap quad
     Roose::Renderer::DrawQuad(minimapX, minimapY, minimapWidth, minimapHeight);
 }
 
 void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
 {
     // Collision resolution between balls
-    const float radius = s_Data.BilliardBalls[0]->GetRadius();
+    const float radius  = s_Data.BilliardBalls[0]->GetRadius();
     const float minDist = 2.0f * radius;
 
     // Resolve collisions for each unique pair
@@ -327,10 +354,10 @@ bool BallPoolLayer::OnKeyDown(const Roose::KeyDownEvent& e)
     switch (e.GetKeyCode())
     {
         case Roose::Key::Escape:
-            App->Close();
+            Roose::Application::Get().Close();
             break;
         case Roose::Key::Enter:
-            if (ctrl) App->GetWindow().ToggleFullscreen();
+            if (ctrl) Roose::Application::Get().GetWindow().ToggleFullscreen();
             break;
         case Roose::Key::Space:
             // Apply force to the cue ball

@@ -23,6 +23,7 @@ public:
     bool OnMouseMove(const Roose::MouseMoveEvent& e);
 private:
     void UpdateSceneRotation(const glm::vec2& mousePosition);
+    void DrawMinimap();
 private:
     CameraController m_CameraController;
 };
