@@ -38,8 +38,6 @@ namespace Roose {
         Ref<VertexArray> VertexArray;
         Ref<VertexBuffer> VertexBuffer;
         Ref<Shader> ScreenSpaceUnlit2DShader;
-
-        glm::vec4 VertexPositions[4];
     };
 
     static RendererData s_Data;
@@ -57,8 +55,8 @@ namespace Roose {
         glEnable(GL_DEPTH_TEST);
 
         // Create Uniform Buffers - 1024 bytes (1KB) for each should be generous enough
-        s_Data.CameraUniformBuffer = UniformBuffer::Create(1024, 0);
-        s_Data.ModelUniformBuffer = UniformBuffer::Create(1024, 1);
+        s_Data.CameraUniformBuffer       = UniformBuffer::Create(1024, 0);
+        s_Data.ModelUniformBuffer        = UniformBuffer::Create(1024, 1);
         s_Data.MaterialDataUniformBuffer = UniformBuffer::Create(1024, 2);
 
         // Create Vertex Array

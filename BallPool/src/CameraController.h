@@ -31,7 +31,6 @@ private:
 
     glm::vec3 m_Translation = { 0.0f, 25.0f, 70.0f };
 
-    bool m_CameraControlEnabled = false;
     float m_TargetFOV = glm::radians(45.0f);
     float m_ZoomSmoothFactor = 10.0f;
     float m_ZoomSpeed = glm::radians(2.5f);

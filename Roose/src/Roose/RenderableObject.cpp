@@ -44,12 +44,15 @@ namespace Roose {
         {
             const auto& meshVertices = meshEntry.Mesh->GetVertices();
             auto meshIndices = meshEntry.Mesh->GetIndices(); // Copy to modify indices
-            const uint32_t meshVertexCount = static_cast<uint32_t>(meshVertices.size());
-            const uint32_t meshIndexCount = static_cast<uint32_t>(meshIndices.size());
+            const uint32_t meshVertexCount = meshEntry.Mesh->GetVertexCount();
+            const uint32_t meshIndexCount = meshEntry.Mesh->GetIndexCount();
 
-            // Shift indices by the current vertex offset
-            for (auto& index : meshIndices)
-                index += vertexOffset;
+            if (vertexOffset > 0)
+            {
+                // Shift indices by the current vertex offset
+                for (auto& index : meshIndices)
+                    index += vertexOffset;
+            }
 
             // Upload vertex and index data to GPU
             m_VBO->SetData(

@@ -1,6 +1,5 @@
 #include "CameraController.h"
 #include <Roose/Core/Application.h>
-#include <Roose/Input/Input.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -19,9 +18,6 @@ void CameraController::OnUpdate(const float deltaTime)
         const float newFOV = glm::mix(currentFOV, m_TargetFOV, m_ZoomSmoothFactor * deltaTime);
         m_Camera.SetVerticalFOV(newFOV);
     }
-
-    m_CameraControlEnabled = !Roose::Input::IsKeyDown(Roose::Key::LeftAlt);
-    m_Window.SetCursorMode(m_CameraControlEnabled ? Roose::WindowCursorMode::Disabled : Roose::WindowCursorMode::Normal);
 }
 
 void CameraController::OnEvent(Roose::Event& e)

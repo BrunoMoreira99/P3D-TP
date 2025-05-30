@@ -9,7 +9,6 @@
 
 #include <Roose/Core/Application.h>
 #include <Roose/Renderer/Renderer.h>
-#include "Roose/Renderer/Framebuffer.h"
 #include <Roose/Renderer/UniformBuffer.h>
 #include <Roose/Input/Input.h>
 #include <Roose/Scene/OrthographicCamera.h>
@@ -22,13 +21,12 @@ struct BallPoolData
     struct CameraData
     {
         glm::mat4 ViewProjection;
-        glm::vec4 Position; // Must be vec4 to prevent memory alignment issues
+        glm::vec4 Position; // Must be vec4 to prevent memory alignment issues in the uniform buffer
     };
 
     CameraData MainCameraBuffer;
     CameraData TopViewCameraBuffer;
     Roose::OrthographicCamera TopViewCamera;
-    Roose::Ref<Roose::Framebuffer> TopViewFramebuffer;
 
     Roose::Ref<Roose::Shader> BlinnPhongShader;
     Roose::Ref<Roose::Shader> UnlitShader;
@@ -126,10 +124,6 @@ void BallPoolLayer::OnAttach()
     // Combine the rotation with the view matrix
     topViewCameraView = rotationMatrix * topViewCameraView;
     s_Data.TopViewCameraBuffer.ViewProjection = s_Data.TopViewCamera.GetProjection() * topViewCameraView;
-    s_Data.TopViewFramebuffer = Roose::Framebuffer::Create({
-        TopViewFramebufferWidth, TopViewFramebufferHeight,
-        { Roose::FramebufferTextureFormat::RGBA8, Roose::FramebufferTextureFormat::Depth }
-    });
 
     s_Data.PrevMousePos = Roose::Input::GetMousePosition();
     UpdateSceneRotation(s_Data.PrevMousePos);
@@ -139,10 +133,16 @@ void BallPoolLayer::OnDetach() {}
 
 void BallPoolLayer::OnUpdate(const Roose::Timestep deltaTime)
 {
+    Roose::Window& window = Roose::Application::Get().GetWindow();
+    window.SetCursorMode(Roose::Input::IsKeyDown(Roose::Key::LeftAlt)
+        ? Roose::WindowCursorMode::Normal
+        : Roose::WindowCursorMode::Disabled
+    );
+
     s_Data.fpsTimer += deltaTime;
     if (s_Data.fpsTimer > 0.25f)
     {
-        Roose::Application::Get().GetWindow().SetTitle("Ball Pool | FPS: " + std::to_string(static_cast<int32_t>(1.0f / deltaTime)));
+        window.SetTitle("Ball Pool | FPS: " + std::to_string(static_cast<int32_t>(1.0f / deltaTime)));
         s_Data.fpsTimer = 0.0f;
     }
 
@@ -178,79 +178,77 @@ void BallPoolLayer::DrawMinimap()
     // Reset the scene rotation for the top-down minimap view
     s_Data.SceneObject->Transform.Rotation = { 1.0f, 0.0f, 0.0f, 0.0f };
 
-    // Clear the depth buffer from the default framebuffer to avoid depth issues with the minimap
+    // Clear the depth buffer to avoid depth issues with the minimap
     Roose::Renderer::ClearDepth();
 
-    // Update the top view camera uniform buffer
+    // Update the camera uniform buffer with the top view camera data
     Roose::Renderer::GetCameraUniformBuffer()->SetData(&s_Data.TopViewCameraBuffer, sizeof(BallPoolData::CameraData));
 
-    // Bind the top view framebuffer and clear it
-    s_Data.TopViewFramebuffer->Bind();
-    Roose::Renderer::SetClearColor({ 0.0f, 0.0f, 0.0f, 0.0f });
-    Roose::Renderer::Clear();
+    // Calculate minimap size and position
+    const Roose::Window& window = Roose::Application::Get().GetWindow();
+    const uint32_t windowWidth  = window.GetWidth();
+    const uint32_t windowHeight = window.GetHeight();
+    const float screenWidth = static_cast<float>(windowWidth);
+    const float screenHeight = static_cast<float>(windowHeight);
+    const float minimapScale = screenWidth / 1600.0f;
+    const float minimapWidth  = 320.0f * minimapScale;
+    const float minimapHeight = minimapWidth / TopViewFramebufferAspectRatio;
+    const float padding = 25.0f * minimapScale;
+    const float minimapX = screenWidth - minimapWidth - padding;
+    const float minimapY = screenHeight - minimapHeight - padding;
+
+    // Set the viewport to the minimap area (top-right corner)
+    Roose::Renderer::SetViewport(
+        static_cast<uint32_t>(minimapX), static_cast<uint32_t>(minimapY),
+        static_cast<uint32_t>(minimapWidth), static_cast<uint32_t>(minimapHeight)
+    );
 
     // Render the scene from the top view using the unlit shader
     s_Data.UnlitShader->Bind();
     s_Data.SceneObject->Render();
 
-    // Unbind the framebuffer
-    s_Data.TopViewFramebuffer->Unbind();
-
     // Restore the original scene rotation
     s_Data.SceneObject->Transform.Rotation = savedSceneRotation;
 
     // Restore the viewport to the full window size
-    const Roose::Window& window = Roose::Application::Get().GetWindow();
-    const uint32_t windowWidth  = window.GetWidth();
-    const uint32_t windowHeight = window.GetHeight();
     Roose::Renderer::SetViewport(0, 0, windowWidth, windowHeight);
-
-    // Bind the minimap texture
-    const uint32_t textureID = s_Data.TopViewFramebuffer->GetColorAttachmentRendererID();
-    glBindTextureUnit(0, textureID);
-
-    // Calculate minimap size and position
-    const float screenWidth = static_cast<float>(windowWidth);
-    const float minimapScale = screenWidth / 1600.0f;
-    const float minimapWidth  = 320.0f * minimapScale;
-    const float minimapHeight = minimapWidth / TopViewFramebufferAspectRatio;
-    const float padding = 25.0f * minimapScale;
-    const float minimapX = screenWidth - minimapWidth / 2.0f - padding;
-    const float minimapY = minimapHeight / 2.0f + padding;
-
-    // Draw the minimap quad
-    Roose::Renderer::DrawQuad(minimapX, minimapY, minimapWidth, minimapHeight);
 }
 
 void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
 {
     // Collision resolution between balls
+    // All balls have the same radius, mass, and restitution
     const float radius  = s_Data.BilliardBalls[0]->GetRadius();
-    const float minDist = 2.0f * radius;
+    const float diameter = radius * 2.0f;
+    const float mass = s_Data.BilliardBalls[0]->RigidBody.Mass;
+    const float restitution = s_Data.BilliardBalls[0]->RigidBody.Restitution;
 
     // Resolve collisions for each unique pair
     for (size_t i = 0; i < s_Data.BilliardBalls.size(); ++i)
     {
         for (size_t j = i + 1; j < s_Data.BilliardBalls.size(); ++j)
         {
-            auto& ballA = s_Data.BilliardBalls[i];
-            auto& ballB = s_Data.BilliardBalls[j];
+            const auto& ballA = s_Data.BilliardBalls[i];
+            const auto& ballB = s_Data.BilliardBalls[j];
 
             const glm::vec3 delta = ballB->Transform.Translation - ballA->Transform.Translation;
             const float distSquared = glm::dot(delta, delta);
 
-            if (distSquared < minDist * minDist)
+            if (distSquared < diameter * diameter)
             {
                 const float dist = glm::sqrt(distSquared);
 
                 glm::vec3 correctionDir;
-                if (dist < 1e-6f) // Balls are almost at the same position, we'll use a random direction to avoid division by zero
-                    correctionDir = glm::normalize(glm::vec3(glm::linearRand(-1.0f, 1.0f), 0.0f, glm::linearRand(-1.0f, 1.0f)));
+                if (dist < 1e-6f)
+                    // Balls are almost at the same position, we'll use a random direction to avoid division by zero
+                    correctionDir = glm::normalize(
+                        glm::vec3(glm::linearRand(-1.0f, 1.0f), 0.0f, glm::linearRand(-1.0f, 1.0f))
+                    );
                 else
                     correctionDir = delta / dist;
 
                 // Position correction (minimum translation distance)
-                const float penetration = minDist - dist;
+                const float penetration = diameter - dist;
                 const glm::vec3 correction = correctionDir * (penetration * 0.5f);
 
                 ballA->Transform.Translation -= correction;
@@ -259,19 +257,14 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
                 // Velocity response (elastic collision)
                 const glm::vec3 vA = ballA->RigidBody.Velocity;
                 const glm::vec3 vB = ballB->RigidBody.Velocity;
-                const float mA = ballA->RigidBody.Mass;
-                const float mB = ballB->RigidBody.Mass;
-                const float restitution = glm::min(ballA->RigidBody.Restitution, ballB->RigidBody.Restitution);
 
                 const float vRel = glm::dot(vB - vA, correctionDir);
-
                 if (vRel < 0.0f) // Only resolve if balls are moving towards each other
                 {
-                    const float impulseMag = -(1.0f + restitution) * vRel / (1.0f / mA + 1.0f / mB);
+                    const float impulseMag = -(1.0f + restitution) * vRel / (1.0f / mass + 1.0f / mass);
                     glm::vec3 impulse = impulseMag * correctionDir;
-
-                    ballA->RigidBody.Velocity -= impulse / mA;
-                    ballB->RigidBody.Velocity += impulse / mB;
+                    ballA->RigidBody.Velocity -= impulse / mass;
+                    ballB->RigidBody.Velocity += impulse / mass;
                 }
             }
         }
@@ -288,7 +281,6 @@ void BallPoolLayer::OnFixedUpdate(const Roose::Timestep fixedDeltaTime)
     {
         glm::vec3& pos = gameObject->Transform.Translation;
         glm::vec3& vel = gameObject->RigidBody.Velocity;
-        float restitution = gameObject->RigidBody.Restitution;
 
         // X boundaries
         if (pos.x - radius < tableMinX)
@@ -360,9 +352,15 @@ bool BallPoolLayer::OnKeyDown(const Roose::KeyDownEvent& e)
             if (ctrl) Roose::Application::Get().GetWindow().ToggleFullscreen();
             break;
         case Roose::Key::Space:
-            // Apply force to the cue ball
-            s_Data.BilliardBalls[0]->ApplyForce({ 0.0f, 0.0f, -750.0f });
+        {
+            const float zForce = glm::linearRand(750.0f, 800.0f);
+            const float xForce = glm::linearRand(0.25f, 0.75f);
+            const bool xDirection = glm::linearRand(0.0f, 1.0f) < 0.5f;
+            const glm::vec3 force = { xDirection ? xForce : -xForce, 0.0f, -zForce };
+            RS_INFO("Applying a force to the cue ball: (%5.2f, %3.1f, %7.2f)", force.x, 0.0f, force.z);
+            s_Data.BilliardBalls[0]->ApplyForce(force);
             break;
+        }
         case Roose::Key::R:
             s_Data.SceneObject->Reset();
             break;
@@ -406,7 +404,7 @@ void BallPoolLayer::UpdateSceneRotation(const glm::vec2& mousePosition)
     // Get right axis for pitch relative to the main camera
     const glm::vec3 cameraPos = m_CameraController.GetPosition();
     const glm::vec3 objectPos = s_Data.SceneObject->Transform.Translation;
-    const glm::vec3 toCamera = glm::normalize(cameraPos - objectPos);
+    const glm::vec3 toCamera  = glm::normalize(cameraPos - objectPos);
 
     const glm::vec3 rightAxis = glm::normalize(glm::cross(glm::vec3(0, 1, 0), toCamera));
 

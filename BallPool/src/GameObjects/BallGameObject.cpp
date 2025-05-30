@@ -9,20 +9,20 @@ static constexpr glm::quat DefaultBallRotation = { 1.0f, -0.40f, 0.0f, 0.0f };
 static constexpr float BallSpacing = 2.05f;
 static constexpr glm::vec3 RackOrigin = { 0.0f, 0.0f, -20.0f };
 static constexpr glm::vec3 InitialBallPositions[16] = {
-    RackOrigin + glm::vec3( 0.0f,           0.0f, 32.5f),                   // Cue ball
-    RackOrigin + glm::vec3( 0.0f,           0.0f, 2.0f * BallSpacing),      // 1
+    RackOrigin + glm::vec3( 0.0f,               0.0f, 32.5f),               // Cue ball
+    RackOrigin + glm::vec3( 0.0f,               0.0f, 2.0f * BallSpacing),  // 1
     RackOrigin + glm::vec3(-0.5 * BallSpacing,  0.0f, BallSpacing),         // 2
     RackOrigin + glm::vec3( 0.5 * BallSpacing,  0.0f, BallSpacing),         // 3
     RackOrigin + glm::vec3(-BallSpacing,        0.0f, 0.0f),                // 4
     RackOrigin + glm::vec3( BallSpacing,        0.0f, 0.0f),                // 5
     RackOrigin + glm::vec3(-1.5f * BallSpacing, 0.0f, -BallSpacing),        // 6
     RackOrigin + glm::vec3(-0.5f * BallSpacing, 0.0f, -BallSpacing),        // 7
-    RackOrigin + glm::vec3( 0.0f,           0.0f, 0.0f),                    // 8
+    RackOrigin + glm::vec3( 0.0f,               0.0f, 0.0f),                // 8
     RackOrigin + glm::vec3( 0.5f * BallSpacing, 0.0f, -BallSpacing),        // 9
     RackOrigin + glm::vec3( 1.5f * BallSpacing, 0.0f, -BallSpacing),        // 10
     RackOrigin + glm::vec3(-2.0f * BallSpacing, 0.0f, -2.0f * BallSpacing), // 11
     RackOrigin + glm::vec3(-BallSpacing,        0.0f, -2.0f * BallSpacing), // 12
-    RackOrigin + glm::vec3( 0.0f,           0.0f, -2.0f * BallSpacing),     // 13
+    RackOrigin + glm::vec3( 0.0f,               0.0f, -2.0f * BallSpacing), // 13
     RackOrigin + glm::vec3( BallSpacing,        0.0f, -2.0f * BallSpacing), // 14
     RackOrigin + glm::vec3( 2.0f * BallSpacing, 0.0f, -2.0f * BallSpacing)  // 15
 };
@@ -33,7 +33,7 @@ BallGameObject::BallGameObject(const uint8_t number, const std::string& objModel
     Transform.Translation = InitialBallPositions[m_BallNumber];
     Transform.Rotation = DefaultBallRotation;
     RigidBody.Mass = 0.165f; // Approximate mass of a billiard ball
-    RigidBody.Restitution = 0.95f;
+    RigidBody.Restitution = 0.98f;
 }
 
 void BallGameObject::SetBallNumber(const uint8_t number)
