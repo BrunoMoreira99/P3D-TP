@@ -13,24 +13,26 @@ project "Roose"
     {
         "src/**.h",
         "src/**.cpp",
-        "vendor/stb_image/**.h",
-        "vendor/stb_image/**.cpp",
         "vendor/glm/glm/**.hpp",
-        "vendor/glm/glm/**.inl"
+        "vendor/glm/glm/**.inl",
+        "vendor/stb_image/**.h",
+        "vendor/stb_image/**.cpp"
     }
 
     includedirs
     {
         "src",
+        "%{IncludeDir.GLEW}",
+        "%{IncludeDir.GLFW}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.stb_image}"
     }
 
     links
     {
-        "vendor/GLEW/glew32s.lib",
-        "vendor/GLFW/glfw3.lib",
-        "opengl32.lib"
+        "%{Library.GLEW}",
+        "%{Library.GLFW}",
+        "%{Library.OpenGL}"
     }
 
     defines

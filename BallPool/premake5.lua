@@ -15,10 +15,14 @@ project "BallPool"
     includedirs
     {
         "%{wks.location}/Roose/src",
+        "%{IncludeDir.GLEW}",
         "%{IncludeDir.glm}"
     }
 
-    links { "Roose" }
+    links
+    {
+        "Roose"
+    }
 
     defines
     {
