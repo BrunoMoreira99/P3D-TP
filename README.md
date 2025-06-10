@@ -2,6 +2,14 @@
 This project was developed as part of the **3D Programming** course of the
 **Bachelor in Digital Game Development Engineering** of the **Polytechnic Institute of Cávado and Ave (IPCA)**.
 
+The goal was to use OpenGL to render a 3D scene of a billiard game, implementing features such as:
+- Loading meshes and materials from OBJ and MTL files.
+- Toggleable lighting from multiple light sources.
+- A minimap of the scene.
+- Some kind of animation - for this project, a physics system was implemented to achieve this.
+- Manipulating the orientation of the scene through mouse input.
+  - Note: Manipulating the scene instead of the camera was a specific requirement for this project.
+
 ### Roose
 - Requires at least OpenGL version 4.5.
 - Uses DSA (Direct State Access) functions whenever possible.
@@ -23,7 +31,7 @@ Thus, all 16 billiard balls share the same `RenderableObject`, i.e., the same VA
 - Features a small physics system that allows the balls to move and collide with each other in a realistic way.
 
 #### Controls:
-- **Mouse movement**: Rotates the camera around the pool table.
+- **Mouse movement**: Rotates the scene.
 - **Mouse scroll**: Zooms the camera in/out.
 - **[ SPACE ]**: Applies a force to the cue ball.
 - **[ R ]**: Resets the position of the balls.
@@ -66,3 +74,6 @@ command:
 ```
 premake5 vs2022
 ```
+
+#### 3. Building the project
+Open the generated solution file in your IDE and build the Ball Pool project.
