@@ -51,9 +51,13 @@ Thus, all 16 billiard balls share the same `RenderableObject`, i.e., the same VA
 - **[ CTRL ] + [ ENTER ]**: Toggles between windowed and fullscreen mode.
 - **[ ESC ]**: Exits the program.
 
+<p align="center">
+<picture><img alt="Preview" src="images/preview.png"></picture>
+</p>
+
 ## Building
 
-Visual Studio 2022 or JetBrains Rider is recommended.
+Visual Studio 2026 or JetBrains Rider is recommended.
 
 #### 1. Downloading the repository
 Start by cloning the repository with:
@@ -72,7 +76,7 @@ Place the `premake5` executable in `vendor/premake/bin` and run any of the **Gen
 Or do it manually by placing the `premake5` executable in the root directory of the project and running the following
 command:
 ```
-premake5 vs2022
+premake5 vs2026
 ```
 
 #### 3. Building the project

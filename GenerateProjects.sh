@@ -1,2 +1,2 @@
 #!/bin/bash
-./vendor/premake/bin/premake5 vs2022
+./vendor/premake/bin/premake5 vs2026
